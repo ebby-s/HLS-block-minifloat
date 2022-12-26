@@ -23,7 +23,7 @@ float mnf_to_f32(minifloat_t op){
     }
 
     return out;
-};
+}
 
 // Convert error-free multiplier output (mul_out_t) to float.
 float mul_to_f32(mul_out_t mul_out){
@@ -39,19 +39,10 @@ float mul_to_f32(mul_out_t mul_out){
     }
 
     return out;
-};
+}
 
-// Convert Kulisch Accumulator to float.
-template <int N>
-float fip_to_f32(ap_uint<N> op){
-
-    float out;
-
-    out /= pow(2, M-1);
-
-    return out;
-};
-
-
-
+// Overload comparison for mul_out_t, to allow sets.
+bool operator <(const mul_out_t &op0, const mul_out_t &op1){
+  return (op0.exp < op1.exp) || ((op0.exp == op1.exp) && (op0.man < op1.man));
+}
 

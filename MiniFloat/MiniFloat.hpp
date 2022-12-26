@@ -54,7 +54,6 @@ struct mul_out_t{
 };
 
 
-
 // Conversion to float type, used only for verification.
 // All assume bias is 0.
 float mnf_to_f32(minifloat_t op);
@@ -62,9 +61,19 @@ float mnf_to_f32(minifloat_t op);
 float mul_to_f32(mul_out_t mul_out);
 
 template <int N>
-float fip_to_f32(ap_uint<N> op);
+float fip_to_f32(ap_int<N> op){
 
+    float out;
 
+    out = op;
+
+    out /= pow(2, M);
+
+    return out;
+}
+
+// Overload operator to allow sets of mul_out_t.
+bool operator <(const mul_out_t &op0, const mul_out_t &op1);
 
 
 #endif

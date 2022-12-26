@@ -1,9 +1,9 @@
 #include <iostream>
-#include <assert>
+#include <cassert>
 #include <set>
 #include "ScalarOperator.hpp"
 
-std::set<mul_out_t> mul_out_set;
+std::set<mul_out_t> mul_out_set;  // Set to store possible values of product.
 
 int mul_tb(){    // Test multiplier by exhaustive search.
 
@@ -30,8 +30,11 @@ int mul_tb(){    // Test multiplier by exhaustive search.
             if((mnf_to_f32(op0) * mnf_to_f32(op1)) != mul_to_f32(prd)){
                 std::cout << '\n';
                 std::cout << "op0: " << mnf_to_f32(op0) << '\n';
+                std::cout << "op0: " << op0.man << ' ' << op0.exp << '\n';
                 std::cout << "op1: " << mnf_to_f32(op1) << '\n';
+                std::cout << "op1: " << op1.man << ' ' << op1.exp << '\n';
                 std::cout << "prd: " << mul_to_f32(prd) << '\n';
+                std::cout << "prd: " << prd.man << ' ' << prd.exp << '\n';
                 std::cout << '\n';
 
                 printf("Multiplier Failed. \n");
@@ -40,26 +43,34 @@ int mul_tb(){    // Test multiplier by exhaustive search.
         }
     }
 
+    printf("Multiplier Test Complete. \n");
     return 0;
 }
 
 int add_prd_tb(){
 
     mul_out_t op0,op1;
-    ap_uint<W_A> sum;
+    ap_int<W_A> sum;
 
-    for(op0: mul_out_set){
-        for(op1: mul_out_set){
+    // Search seen values of product.
+    for(std::set<mul_out_t>::iterator i = mul_out_set.begin(); i != mul_out_set.end(); i++){
+        for(std::set<mul_out_t>::iterator j = mul_out_set.begin(); j != mul_out_set.end(); j++){
+
+            op0 = *i;
+            op1 = *j;
 
             sum = op0 + op1;        // Get result from DUT.
 
             // Compare DUT result to reference done in float(f32).
             // Assuming f32 has sufficient precision to represent sum without error.
-            if((mul_to_f32(op0) * mul_to_f32(op1)) != fip_to_f32(sum)){
+            if((mul_to_f32(op0) + mul_to_f32(op1)) != fip_to_f32(sum)){
                 std::cout << '\n';
                 std::cout << "op0: " << mul_to_f32(op0) << '\n';
+                std::cout << "op0: " << op0.man << ' ' << op0.exp << '\n';
                 std::cout << "op1: " << mul_to_f32(op1) << '\n';
+                std::cout << "op1: " << op1.man << ' ' << op1.exp << '\n';
                 std::cout << "sum: " << fip_to_f32(sum) << '\n';
+                std::cout << "sum: " << sum << '\n';
                 std::cout << '\n';
 
                 printf("Adder Failed. \n");
@@ -68,6 +79,7 @@ int add_prd_tb(){
         }
     }
 
+    printf("Adder Test Complete. \n");
     return 0;
 }
 

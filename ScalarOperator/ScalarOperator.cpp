@@ -42,18 +42,20 @@ mul_out_t operator *(minifloat_t op0, minifloat_t op1){
     }
 
     return prd;
-};
+}
 
 
 
-ap_uint<W_A> operator +(mul_out_t op0, mul_out_t op1){
+ap_int<W_A> operator +(mul_out_t op0, mul_out_t op1){
 
-    ap_uint<W_PRD> op0_fi;
-    ap_uint<W_PRD> op1_fi;
+    ap_int<W_PRD> op0_fi;
+    ap_int<W_PRD> op1_fi;
 
-    op0_fi = op0.man << (op0.exp -2);
+    op0_fi = op0.man;
+    op1_fi = op1.man;
 
-    op1_fi = op1.man << (op1.exp -2);
+    op0_fi <<= op0.exp -2;
+    op1_fi <<= op1.exp -2;
 
     if(op0.sgn){
         op0_fi *= -1;
@@ -63,27 +65,14 @@ ap_uint<W_A> operator +(mul_out_t op0, mul_out_t op1){
         op1_fi *= -1;
     }
 
-    ap_uint<W_A> acc;
+    ap_int<W_A> acc;
 
-    acc = op0_fi + op1_fi;
+    acc = op0_fi;
 
-    return acc;
-};
-
-
-template <int N>
-ap_uint<N+1> operator +(ap_uint<N> op0, ap_uint<N> op1){
-
-    ap_uint<N+1> acc;
-
-    acc = op0 + op1;
+    acc += op1_fi;
 
     return acc;
-    
-};
-
-
-
+}
 
 
 
