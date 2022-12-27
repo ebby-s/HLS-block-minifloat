@@ -3,77 +3,107 @@
 
 #include "ap_int.h"    // Use arbitrary precision types.
 
-// MiniFloat field widths.
-#define E 2             // Exponent width for minifloat representation. 2 <= E <= 8
-#define M 2             // Mantissa width for minifloat representation. 0 <= M <= 6
 
-#define LOG_FRMT (M == 0)   // If M is set to 0, use logarithmic BMF format.
-
-// Size of error-free multiplier output.
-#define E_PRD  E + 1
-#define M_PRD (M + 1) * 2
-
-// Size of first K. Accumulator.
-// w.l.g assume bias = 0.
-// If converted to fixed point without error,
-// LSB has value 2^-(M-1), MSB has value 2^(2^E -1).
-// Size of fi representation is (2^E -1) + (M-1) + 1 bits.
-// Eg. M=5, E=3.
-// Only MSB is set when: exponent = 7, mantissa = 0.
-// Value is: 2^7
-// Only LSB is set when: exponent = 0, mantissa = 1.
-// Value is: 2^-4
-// Fi representation uses 12 bits.
-// 2^3 - 1 + 5-1 + 1 = 12.
-// Add a bit for 2's compl.
-// w_fi = 2^E-1 + M-1 + 1 + 1
-// w_a = Fi_W*2 + 1
-#define W_PRD ((1<<E) + M)*2 + 1
-#define W_A   ((1<<E) + M)*2 + 1
+template <int E, int M> class MiniFloat;     // MiniFloat.
+template <int E>        class LogMiniFloat;  // Logarithmic MiniFloat.
+template <int N, int F> class KulischAcc;    // Fixed Point Accumulator.
 
 
-typedef ap_uint<1>         sgn_t;
-typedef ap_uint<E>         exp_t;
-typedef ap_uint<M>         man_t;
-typedef ap_uint<E_PRD> prd_exp_t;
-typedef ap_uint<M_PRD> prd_man_t;
+template <int E, int M> class MiniFloat{
 
+    protected:
+    ap_uint<1> sgn;
+    ap_uint<E> exp;
+    ap_uint<M> man;
 
-// MiniFloat.
-struct minifloat_t{
-    sgn_t sgn;
-    exp_t exp;
-    man_t man;
-};
+    public:
+    MiniFloat(){}
 
-// Error-free multiplier output.
-struct mul_out_t{
-    sgn_t     sgn;
-    prd_exp_t exp;
-    prd_man_t man;
+    KulischAcc<((1<<E)+M)*2, -2*(M-1)> operator *(const MiniFloat<E,M> &op);
+
+    // Methods for verification, not used for synthesis.
+    MiniFloat(int op){
+        sgn = op >> (M+E);
+        exp = op >>  M;
+        man = op;
+    }
+
+    operator float() const{  // Assume f32 has enough precision to convert exactly, and no bias.
+        float out = man;
+        out /= (1 << M);
+        if(exp){
+            out += 1;
+        }else{
+            out *= 2;
+        }
+        out *= (1 << exp);
+        if(sgn) out *= -1;
+        return out;
+    }
 };
 
 
-// Conversion to float type, used only for verification.
-// All assume bias is 0.
-float mnf_to_f32(minifloat_t op);
+template <int E> class LogMiniFloat{
 
-float mul_to_f32(mul_out_t mul_out);
+    protected:
+    ap_uint<1> sgn;
+    ap_uint<E> exp;
 
-template <int N>
-float fip_to_f32(ap_int<N> op){
+    public:
+    LogMiniFloat(){}
 
-    float out;
+    KulischAcc<(1<<E)*2, 2> operator *(const LogMiniFloat<E> &op);
 
-    out = op;
+    // Methods for verification, not used for synthesis.
+    LogMiniFloat(int op){
+        sgn = op >> E;
+        exp = op;
+    }
 
-    out /= pow(2, M);
+    operator float() const{  // Assume f32 has enough precision to convert exactly, and no bias.
+        float out = 0;
+        if(exp) out = (1 << exp);
+        if(sgn) out *= -1;
+        return out;
+    }
+};
 
-    return out;
-}
 
-// Overload operator to allow sets of mul_out_t.
-bool operator <(const mul_out_t &op0, const mul_out_t &op1);
+// N is the accumulator size, the value of the LSB is 2^F.
+// Eg. F = -2*(M-1) when representing the product of 2 MiniFloat numbers.
+template <int N, int F> class KulischAcc{
 
+    protected:
+    ap_int<N> acc;
+
+    public:
+    KulischAcc(){}
+
+    template <typename T>
+    KulischAcc(T op){
+        acc = op;
+    }
+
+    template <typename U>
+    KulischAcc<N,F> operator *=(U op){
+        acc *= op;
+    }
+
+    template <typename V>
+    KulischAcc<N,F> operator <<=(V op){
+        acc <<= op;
+    }
+
+    KulischAcc<N+1,F> operator +(const KulischAcc<N,F> &op);
+
+    // Methods for verification, not used for synthesis.
+    operator float() const{  // Assume f32 has enough precision to convert exactly.
+        float out = acc;
+        out *= pow(2,F);
+        return out;
+    }
+
+    friend class KulischAcc<N-1,F>;
+};
 
 #endif
