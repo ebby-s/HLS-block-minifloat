@@ -83,4 +83,7 @@ template <int N, int F> class KulischAcc{
     friend class KulischAcc<N-1,F>;
 };
 
+// Include implementations of scalar multiplication and addition.
+#include "../ScalarOperator/ScalarOperator.hpp"
+
 #endif

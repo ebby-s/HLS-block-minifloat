@@ -1,8 +1,6 @@
 #ifndef SCALAR_OP
 #define SCALAR_OP
 
-#include "../MiniFloat/MiniFloat.hpp"
-
 
 // Multiply a pair of MiniFloats, produce error-free output. No NaN/Inf representation.
 template <int E, int M>

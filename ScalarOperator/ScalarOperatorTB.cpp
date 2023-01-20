@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
-#include "ScalarOperator.hpp"
+
+#include "../MiniFloat/MiniFloat.hpp"
 
 
 template <int E, int M>
@@ -30,9 +31,9 @@ int mul_tb(){    // Test multiplier by exhaustive search.
                 //std::cout << "prd: " << prd.acc << '\n';
                 std::cout << '\n';
 
-                printf("######################## Multiplier Failed. \n");
+                printf("Multiplier Failed. \n");
                 std::cout << "Parameters: E=" << E << " M=" << M << '\n';
-                return 1;
+                throw 1;
             }
         }
     }
@@ -69,9 +70,9 @@ int add_tb(){    // Test adder by exhaustive search.
                 //std::cout << "sum: " << sum.acc << '\n';
                 std::cout << '\n';
 
-                printf("######################## Adder Failed. \n");
+                printf("Adder Failed. \n");
                 std::cout << "Parameters: E=" << E << " M=" << M << '\n';
-                return 1;
+                throw 1;
             }
         }
     }
@@ -84,22 +85,23 @@ int add_tb(){    // Test adder by exhaustive search.
 
 int main(){
 
-    mul_tb<2,0>();
-    mul_tb<2,1>();
-    mul_tb<2,2>();
-    mul_tb<3,0>();
-    mul_tb<3,1>();
-    mul_tb<3,2>();
-    mul_tb<4,3>();
+    try{
 
-    add_tb<2,0>();
-    add_tb<2,1>();
-    add_tb<2,2>();
+        mul_tb<2,0>();
+        mul_tb<2,1>();
+        mul_tb<2,2>();
+        mul_tb<3,0>();
+        mul_tb<3,1>();
+        mul_tb<3,2>();
+        mul_tb<4,3>();
 
-    // assert(mul_tb<2,2>());
-    // assert(mul_tb<2,0>());
-    // assert(add_tb<2,2>());
-    // assert(add_tb<2,0>());
+        add_tb<2,0>();
+        add_tb<2,1>();
+        add_tb<2,2>();
+
+    }catch(int e){
+        std::cout << "Scalar Operator TB Failed.\n";
+    }
 
     return 0;
 }
