@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cassert>
 
-#include "../MiniFloat/MiniFloat.hpp"
+#include "MiniFloat.hpp"
 
 
 template <int E, int M>

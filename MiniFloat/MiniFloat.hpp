@@ -64,11 +64,13 @@ template <int N, int F> class KulischAcc{
     template <typename U>
     KulischAcc<N,F> operator *=(U op){
         acc *= op;
+        return *this;
     }
 
     template <typename V>
     KulischAcc<N,F> operator <<=(V op){
         acc <<= op;
+        return *this;
     }
 
     KulischAcc<N+1,F> operator +(const KulischAcc<N,F> &op);
@@ -84,6 +86,6 @@ template <int N, int F> class KulischAcc{
 };
 
 // Include implementations of scalar multiplication and addition.
-#include "../ScalarOperator/ScalarOperator.hpp"
+#include "ScalarOperator.hpp"
 
 #endif
