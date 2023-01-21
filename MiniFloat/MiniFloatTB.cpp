@@ -22,14 +22,9 @@ int mul_tb(){    // Test multiplier by exhaustive search.
             // Compare DUT result to reference done in float(f32).
             // Assuming f32 has sufficient precision to represent mul_out_t without error.
             if((float(op0) * float(op1)) != float(prd)){
-                std::cout << '\n';
-                std::cout << "op0: " << float(op0) << '\n';
-                //std::cout << "op0: " << op0.man << ' ' << op0.exp << '\n';
-                std::cout << "op1: " << float(op1) << '\n';
-                //std::cout << "op1: " << op1.man << ' ' << op1.exp << '\n';
-                std::cout << "prd: " << float(prd) << '\n';
+                std::cout << '\n' << float(op0) << " * " << float(op1) << " = " << float(prd) << '\n';
+                std::cout << "op0: " << op0.data << "op1: " << op1.data << '\n';
                 //std::cout << "prd: " << prd.acc << '\n';
-                std::cout << '\n';
 
                 printf("Multiplier Failed. \n");
                 std::cout << "Parameters: E=" << E << " M=" << M << '\n';
@@ -61,14 +56,8 @@ int add_tb(){    // Test adder by exhaustive search.
             // Compare DUT result to reference done in float(f32).
             // Assuming f32 has sufficient precision to represent mul_out_t without error.
             if((float(op0) + float(op1)) != float(sum)){
-                std::cout << '\n';
-                std::cout << "op0: " << float(op0) << '\n';
-                //std::cout << "op0: " << op0.acc << '\n';
-                std::cout << "op1: " << float(op1) << '\n';
-                //std::cout << "op1: " << op1.acc << '\n';
-                std::cout << "sum: " << float(sum) << '\n';
-                //std::cout << "sum: " << sum.acc << '\n';
-                std::cout << '\n';
+                std::cout << '\n' << float(op0) << " + " << float(op1) << " = " << float(sum) << '\n';
+                //std::cout << "op0: " << op0.acc << "op1: " << op1.acc << "sum: " << sum.acc << '\n';
 
                 printf("Adder Failed. \n");
                 std::cout << "Parameters: E=" << E << " M=" << M << '\n';
@@ -104,13 +93,7 @@ int full_tb(){    // Test adder by exhaustive search.
                     // Compare DUT result to reference done in float(f32).
                     // Assuming f32 has sufficient precision to represent mul_out_t without error.
                     if(((float(op0) * float(op1)) + (float(op2) * float(op3))) != float(dot_prd)){
-                        std::cout << '\n';
-                        std::cout << "op0: " << float(op0) << '\n';
-                        std::cout << "op1: " << float(op1) << '\n';
-                        std::cout << "op0: " << float(op2) << '\n';
-                        std::cout << "op1: " << float(op3) << '\n';
-                        std::cout << "sum: " << float(dot_prd) << '\n';
-                        std::cout << '\n';
+                        std::cout << '\n'<<float(op0)<<" * "<<float(op1)<<" + "<<float(op2)<<" * "<<float(op3)<<" = "<<float(dot_prd)<<'\n';
 
                         printf("DP2 Failed. \n");
                         std::cout << "Parameters: E=" << E << " M=" << M << '\n';
@@ -143,7 +126,7 @@ int main(){
         add_tb<2,1>();
         add_tb<2,2>();
 
-        full_tb<2,1>();
+        full_tb<Et,Mt>();
 
     }catch(int e){
         std::cout << "Scalar Operator TB Failed.\n";

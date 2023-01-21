@@ -6,26 +6,32 @@
 template <int E, int M>
 KulischAcc<((1<<E)+M)*2, 2*(M-1)> MiniFloat<E,M>::operator *(const MiniFloat<E,M> &op){
 
+    ap_uint<1> sgn = data >> (E+M);
+    ap_uint<E> exp = (data >> M) & ((1<<E)-1);
+
+    ap_uint<1> op_sgn = op.data >> (E+M);
+    ap_uint<E> op_exp = (op.data >> M) & ((1<<E)-1);
+
     ap_uint<1>       prd_sgn;
     ap_uint<E+1>     prd_exp;
     ap_uint<(M+1)*2> prd_man;
 
     // Calculate sign of result.
-    prd_sgn = sgn ^ op.sgn;
+    prd_sgn = sgn ^ op_sgn;
 
     // Calculate result exponent.
-    prd_exp = exp + op.exp;
+    prd_exp = exp + op_exp;
 
     if(M != 0){  // Denormals only exist when M > 0.
         prd_exp += (exp    == 0);
-        prd_exp += (op.exp == 0);
+        prd_exp += (op_exp == 0);
     }
 
     // Calculate result mantissa.
     if(M == 0){
-        prd_man = !((exp == 0) || (op.exp == 0));
+        prd_man = !((exp == 0) || (op_exp == 0));
     }else{
-        prd_man = (((exp != 0) << M) | man) * (((op.exp != 0) << M) | op.man);
+        prd_man = (((exp != 0) << M) | (data & ((1<<M)-1))) * (((op_exp != 0) << M) | (op.data & ((1<<M)-1)));
     }
 
     // Form fixed-point output.
