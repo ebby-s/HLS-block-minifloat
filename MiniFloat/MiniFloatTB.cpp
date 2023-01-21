@@ -2,7 +2,7 @@
 #include <cassert>
 
 #include "MiniFloat.hpp"
-
+#include "DotPrd2.hpp"
 
 template <int E, int M>
 int mul_tb(){    // Test multiplier by exhaustive search.
@@ -83,6 +83,50 @@ int add_tb(){    // Test adder by exhaustive search.
 }
 
 
+template<int E, int M>
+int full_tb(){    // Test adder by exhaustive search.
+
+    MiniFloat<E,M> op0, op1, op2, op3;                     // op0 and op1 are inputs to multiplier.
+    KulischAcc<((1<<E)+M)*2+1, 2*(M-1)> dot_prd;     // sum = op0 + op1, output of multiplier.
+
+    for(int i=0; i<pow(2,E+M+1); i++){
+        for(int j=0; j<pow(2,E+M+1); j++){
+            for(int k=0; k<pow(2,E+M+1); k++){
+                for(int l=0; l<pow(2,E+M+1); l++){
+
+                    op0 = i;   // Generate op0.
+                    op1 = j;   // Generate op1.
+                    op2 = k;   // Generate op2.
+                    op3 = l;   // Generate op3.
+
+                    dot_prd = DotPrd2(op0,op1,op2,op3);        // Get result from DUT.
+
+                    // Compare DUT result to reference done in float(f32).
+                    // Assuming f32 has sufficient precision to represent mul_out_t without error.
+                    if(((float(op0) * float(op1)) + (float(op2) * float(op3))) != float(dot_prd)){
+                        std::cout << '\n';
+                        std::cout << "op0: " << float(op0) << '\n';
+                        std::cout << "op1: " << float(op1) << '\n';
+                        std::cout << "op0: " << float(op2) << '\n';
+                        std::cout << "op1: " << float(op3) << '\n';
+                        std::cout << "sum: " << float(dot_prd) << '\n';
+                        std::cout << '\n';
+
+                        printf("DP2 Failed. \n");
+                        std::cout << "Parameters: E=" << E << " M=" << M << '\n';
+                        throw 1;
+                    }
+                }
+            }
+        }
+    }
+
+    printf("DP2 Test Complete. \n");
+    std::cout << "Parameters: E=" << E << " M=" << M << '\n';
+    return 0;
+}
+
+
 int main(){
 
     try{
@@ -98,6 +142,8 @@ int main(){
         add_tb<2,0>();
         add_tb<2,1>();
         add_tb<2,2>();
+
+        full_tb<2,1>();
 
     }catch(int e){
         std::cout << "Scalar Operator TB Failed.\n";

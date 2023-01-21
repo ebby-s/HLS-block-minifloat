@@ -1,20 +1,25 @@
-#include "MiniFloat.hpp"
+#include "DotPrd2.hpp"
 
 
-#define E 3
-#define M 4
-#define N ((1<<E)+M)*2
-#define F 2*(M-1)
 
+KulischAcc<Nt+1,Ft> DotPrd2(
+    MiniFloat<Et,Mt> op0,
+    MiniFloat<Et,Mt> op1,
+    MiniFloat<Et,Mt> op2,
+    MiniFloat<Et,Mt> op3
+){
 
-void DotPrd2(MiniFloat<E,M> op0[2], MiniFloat<E,M> op1[2], KulischAcc<N+1,F> *sum){
+    KulischAcc<Nt,Ft> prd0;
+    KulischAcc<Nt,Ft> prd1;
 
-    KulischAcc<N,F> prd0, prd1;
-    #pragma HLS aggregate variable=prd0
-  
-    prd0 = op0[0] * op0[1];
-    prd1 = op1[0] * op1[1];
+    #pragma HLS data_pack variable=op0
+    #pragma HLS data_pack variable=op1
+    #pragma HLS data_pack variable=op2
+    #pragma HLS data_pack variable=op3
 
-    *sum = prd0 + prd1;
+    prd0 = op0 * op1;
+    prd1 = op2 * op3;
+
+    return prd0 + prd1;
 
 }
