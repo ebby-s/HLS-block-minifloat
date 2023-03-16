@@ -73,10 +73,10 @@ int add_tb(){    // Test adder by exhaustive search.
 
 
 template<int E, int M>
-int full_tb(){    // Test adder by exhaustive search.
+int full_tb(){    // Test dot product circuit by exhaustive search.
 
-    MiniFloat<E,M> op0, op1, op2, op3;                     // op0 and op1 are inputs to multiplier.
-    KulischAcc<((1<<E)+M)*2+1, 2*(M-1)> dot_prd;     // sum = op0 + op1, output of multiplier.
+    MiniFloat<E,M> op0, op1, op2, op3;               // [op0, op2] and [op1, op3] are inputs to DP circuit.
+    KulischAcc<((1<<E)+M)*2+1, 2*(M-1)> dot_prd;     // Output of DP circuit.
 
     for(int i=0; i<pow(2,E+M+1); i++){
         for(int j=0; j<pow(2,E+M+1); j++){
@@ -88,7 +88,7 @@ int full_tb(){    // Test adder by exhaustive search.
                     op2 = k;   // Generate op2.
                     op3 = l;   // Generate op3.
 
-                    dot_prd = DotPrd2(op0,op1,op2,op3);        // Get result from DUT.
+                    dot_prd = DotPrd2(op0,op1,op2,op3);    // Get result from DUT.
 
                     // Compare DUT result to reference done in float(f32).
                     // Assuming f32 has sufficient precision to represent mul_out_t without error.

@@ -6,22 +6,28 @@
 
 template <int E, int M> struct MiniFloat;     // MiniFloat.
 template <int N, int F> class  KulischAcc;    // Fixed Point Accumulator.
+// N is the accumulator size, the value of the LSB is 2^F.
+// Eg. F = -2*(M-1) when representing the product of 2 MiniFloats (assume bias=0).
 
 
 template <int E, int M> struct MiniFloat{
 
+    // Represents sign, exponent and optional mantissa in that order.
     ap_uint<1+E+M> data;
 
-    MiniFloat(){}
-
+    // Multiply a pair of MiniFloats and produce a KulischAcc.
     KulischAcc<((1<<E)+M)*2, 2*(M-1)> operator *(const MiniFloat<E,M> &op);
 
-    // Methods for verification, not used for synthesis.
+    //////----Methods for verification, do not synthesize.----//////
+    MiniFloat(){}
+
+    // Constructor to initialize data before tests.
     MiniFloat(int op){
         data = op;
     }
 
-    operator float() const{  // Assume f32 has enough precision to convert exactly, and no bias.
+    // Convert to cpp float. Assume bias=0.
+    operator float() const{
 
         ap_uint<1> sgn = data >> (E+M);
         ap_uint<E> exp = (data >> M) & ((1<<E)-1);
@@ -42,8 +48,6 @@ template <int E, int M> struct MiniFloat{
 
 
 
-// N is the accumulator size, the value of the LSB is 2^F.
-// Eg. F = -2*(M-1) when representing the product of 2 MiniFloat numbers.
 template <int N, int F> class KulischAcc{
 
     protected:
