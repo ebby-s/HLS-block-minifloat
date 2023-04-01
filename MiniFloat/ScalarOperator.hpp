@@ -37,26 +37,37 @@ KulischAcc<((1<<E)+M)*2, 2*(M-1)> MiniFloat<E,M>::operator *(const MiniFloat<E,M
     // Form fixed-point output.
     KulischAcc<((1<<E)+M)*2, 2*(M-1)> prd_fi;
 
-    prd_fi = prd_man;
+    prd_fi.acc = prd_man;
 
-    prd_fi <<= (prd_exp - 2);
+    prd_fi.acc <<= (prd_exp - 2);
 
     if(prd_sgn)
-        prd_fi *= -1;
+        prd_fi.acc *= -1;
 
     return prd_fi;
 }
 
 
 
-// Sum a pair of fixed point numbers without errors.
-template <int N, int F>
-KulischAcc<N+1,F> KulischAcc<N,F>::operator +(const KulischAcc<N,F> &op){
+// // Sum a pair of fixed point numbers of equal width.
+// template <int N, int F>
+// KulischAcc<N+1,F> KulischAcc<N,F>::operator +(const KulischAcc<N,F> &op){
 
-    KulischAcc<N+1,F> out;
-    out.acc = acc;
-    out.acc += op.acc;
-    return out;
-}
+//     KulischAcc<N+1,F> out;
+//     out.acc = acc;
+//     out.acc += op.acc;
+//     return out;
+// }
+
+// // Sum a pair of fixed point numbers of different widths.
+// template <int N, int F>
+// template <int N2>
+// KulischAcc<max_value<N,N2>::value+1,F> KulischAcc<N,F>::operator +(const KulischAcc<N2,F> &op){
+
+//     KulischAcc<max_value<N,N2>::value+1,F> out;
+//     out.acc = acc;
+//     out.acc += op.acc;
+//     return out;
+// }
 
 #endif
