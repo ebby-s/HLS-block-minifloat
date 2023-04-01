@@ -5,8 +5,8 @@
 
 #define Et 2
 #define Mt 0
-#define Wt ((1<<Et)+Mt)*2
-#define Ft 2*(Mt-1)
+#define Wt WfromEM(Et,Mt)
+#define Ft FfromEM(Et,Mt)
 
 KulischAcc<Wt+1,Ft> DotPrd2(
     MiniFloat<Et,Mt> op0,

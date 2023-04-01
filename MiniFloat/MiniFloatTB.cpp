@@ -8,7 +8,7 @@ template <int E, int M>
 int mul_tb(){    // Test multiplier by exhaustive search.
 
     MiniFloat<E,M> op0, op1;                 // op0 and op1 are inputs to multiplier.
-    KulischAcc<((1<<E)+M)*2, 2*(M-1)> prd;  // prd = op0 * op1, output of multiplier.
+    KulischAcc<WfromEM(E,M), FfromEM(E,M)> prd;  // prd = op0 * op1, output of multiplier.
 
     for(int i=0; i<pow(2,E+M+1); i++){
         for(int j=0; j<pow(2,E+M+1); j++){
@@ -41,11 +41,11 @@ int mul_tb(){    // Test multiplier by exhaustive search.
 template<int E, int M>
 int add_tb(){    // Test adder by exhaustive search.
 
-    KulischAcc<((1<<E)+M)*2,   2*(M-1)> op0, op1;  // op0 and op1 are inputs to multiplier.
-    KulischAcc<((1<<E)+M)*2+1, 2*(M-1)> sum;       // sum = op0 + op1, output of multiplier.
+    KulischAcc<WfromEM(E,M),   FfromEM(E,M)> op0, op1;  // op0 and op1 are inputs to multiplier.
+    KulischAcc<WfromEM(E,M)+1, FfromEM(E,M)> sum;       // sum = op0 + op1, output of multiplier.
 
-    for(int i=0; i<pow(2,((1<<E)+M)*2); i++){
-        for(int j=0; j<pow(2,((1<<E)+M)*2); j++){
+    for(int i=0; i<pow(2,WfromEM(E,M)); i++){
+        for(int j=0; j<pow(2,WfromEM(E,M)); j++){
 
             op0 = i;   // Generate op0.
 
@@ -76,7 +76,7 @@ template<int E, int M>
 int full_tb(){    // Test dot product circuit by exhaustive search.
 
     MiniFloat<E,M> op0, op1, op2, op3;               // [op0, op2] and [op1, op3] are inputs to DP circuit.
-    KulischAcc<((1<<E)+M)*2+1, 2*(M-1)> dot_prd;     // Output of DP circuit.
+    KulischAcc<WfromEM(E,M)+1, 2*(M-1)> dot_prd;     // Output of DP circuit.
 
     for(int i=0; i<pow(2,E+M+1); i++){
         for(int j=0; j<pow(2,E+M+1); j++){

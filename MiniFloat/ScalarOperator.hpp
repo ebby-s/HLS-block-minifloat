@@ -4,7 +4,7 @@
 
 // Multiply a pair of MiniFloats, produce error-free output. No NaN/Inf representation.
 template <int E, int M>
-KulischAcc<((1<<E)+M)*2, 2*(M-1)> MiniFloat<E,M>::operator *(const MiniFloat<E,M> &op){
+KulischAcc<WfromEM(E,M), FfromEM(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E,M> &op){
 
     ap_uint<1> sgn = data >> (E+M);
     ap_uint<E> exp = (data >> M) & ((1<<E)-1);
@@ -35,7 +35,7 @@ KulischAcc<((1<<E)+M)*2, 2*(M-1)> MiniFloat<E,M>::operator *(const MiniFloat<E,M
     }
 
     // Form fixed-point output.
-    KulischAcc<((1<<E)+M)*2, 2*(M-1)> prd_fi;
+    KulischAcc<WfromEM(E,M), FfromEM(E,M)> prd_fi;
 
     prd_fi.acc = prd_man;
 
@@ -59,15 +59,11 @@ KulischAcc<((1<<E)+M)*2, 2*(M-1)> MiniFloat<E,M>::operator *(const MiniFloat<E,M
 //     return out;
 // }
 
-// // Sum a pair of fixed point numbers of different widths.
-// template <int W, int F>
-// template <int W2>
-// KulischAcc<max_value<W,W2>::value+1,F> KulischAcc<W,F>::operator +(const KulischAcc<W2,F> &op){
-
-//     KulischAcc<max_value<W,W2>::value+1,F> out;
-//     out.acc = acc;
-//     out.acc += op.acc;
-//     return out;
-// }
+// Sum a pair of fixed point numbers of arbitrary widths.
+template <int W, int F>
+template <int W2>
+inline KulischAcc<max_value<W,W2>::value+1,F> KulischAcc<W,F>::operator +(const KulischAcc<W2,F> &op){
+    return acc + op.acc;
+}
 
 #endif
