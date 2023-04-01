@@ -10,8 +10,8 @@ template <int A, int B> struct max_value{
 
 
 template <int E, int M> struct MiniFloat;     // MiniFloat.
-template <int N, int F> struct KulischAcc;    // Fixed Point Accumulator.
-// N is the accumulator size, the value of the LSB is 2^F.
+template <int W, int F> struct KulischAcc;    // Fixed Point Accumulator.
+// W is the accumulator size, the value of the LSB is 2^F.
 // Eg. F = -2*(M-1) when representing the product of 2 MiniFloats (assume bias=0).
 
 
@@ -53,17 +53,17 @@ template <int E, int M> struct MiniFloat{
 
 
 
-template <int N, int F> struct KulischAcc{
+template <int W, int F> struct KulischAcc{
 
     // Represents a signed fixed point number.
-    ap_int<N> acc;
+    ap_int<W> acc;
 
     // // Add a pair of fi numbers with equal width.
-    // KulischAcc<N+1,F> operator +(const KulischAcc<N,F> &op);
+    // KulischAcc<W+1,F> operator +(const KulischAcc<W,F> &op);
 
     // Add a pair of fi numbers with arbitrary widths.
-    template<int N2>
-    KulischAcc<max_value<N,N2>::value+1,F> operator +(const KulischAcc<N2,F> &op){
+    template<int W2>
+    KulischAcc<max_value<W,W2>::value+1,F> operator +(const KulischAcc<W2,F> &op){
         return acc + op.acc;
     }
 

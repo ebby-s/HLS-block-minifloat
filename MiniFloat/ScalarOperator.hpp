@@ -50,21 +50,21 @@ KulischAcc<((1<<E)+M)*2, 2*(M-1)> MiniFloat<E,M>::operator *(const MiniFloat<E,M
 
 
 // // Sum a pair of fixed point numbers of equal width.
-// template <int N, int F>
-// KulischAcc<N+1,F> KulischAcc<N,F>::operator +(const KulischAcc<N,F> &op){
+// template <int W, int F>
+// KulischAcc<W+1,F> KulischAcc<W,F>::operator +(const KulischAcc<W,F> &op){
 
-//     KulischAcc<N+1,F> out;
+//     KulischAcc<W+1,F> out;
 //     out.acc = acc;
 //     out.acc += op.acc;
 //     return out;
 // }
 
 // // Sum a pair of fixed point numbers of different widths.
-// template <int N, int F>
-// template <int N2>
-// KulischAcc<max_value<N,N2>::value+1,F> KulischAcc<N,F>::operator +(const KulischAcc<N2,F> &op){
+// template <int W, int F>
+// template <int W2>
+// KulischAcc<max_value<W,W2>::value+1,F> KulischAcc<W,F>::operator +(const KulischAcc<W2,F> &op){
 
-//     KulischAcc<max_value<N,N2>::value+1,F> out;
+//     KulischAcc<max_value<W,W2>::value+1,F> out;
 //     out.acc = acc;
 //     out.acc += op.acc;
 //     return out;

@@ -2,15 +2,15 @@
 
 
 
-KulischAcc<Nt+1,Ft> DotPrd2(
+KulischAcc<Wt+1,Ft> DotPrd2(
     MiniFloat<Et,Mt> op0,
     MiniFloat<Et,Mt> op1,
     MiniFloat<Et,Mt> op2,
     MiniFloat<Et,Mt> op3
 ){
 
-    KulischAcc<Nt,Ft> prd0;
-    KulischAcc<Nt,Ft> prd1;
+    KulischAcc<Wt,Ft> prd0;
+    KulischAcc<Wt,Ft> prd1;
 
     // #pragma HLS data_pack variable=op0
     // #pragma HLS data_pack variable=op1
