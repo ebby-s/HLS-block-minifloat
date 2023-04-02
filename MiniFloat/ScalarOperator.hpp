@@ -62,7 +62,7 @@ KulischAcc<WfromEM(E,M), FfromEM(E,M)> MiniFloat<E,M>::operator *(const MiniFloa
 // Sum a pair of fixed point numbers of arbitrary widths.
 template <int W, int F>
 template <int W2>
-inline KulischAcc<max_value<W,W2>::value+1,F> KulischAcc<W,F>::operator +(const KulischAcc<W2,F> &op){
+inline KulischAcc<MAX(W,W2)+1,F> KulischAcc<W,F>::operator +(const KulischAcc<W2,F> &op){
     return acc + op.acc;
 }
 
