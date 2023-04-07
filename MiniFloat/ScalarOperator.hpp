@@ -63,7 +63,12 @@ KulischAcc<WfromEM(E,M), FfromEM(E,M)> MiniFloat<E,M>::operator *(const MiniFloa
 template <int W, int F>
 template <int W2>
 inline KulischAcc<MAX(W,W2)+1,F> KulischAcc<W,F>::operator +(const KulischAcc<W2,F> &op){
-    return acc + op.acc;
+
+    KulischAcc<MAX(W,W2)+1,F> out;
+
+    out.acc = acc + op.acc;
+
+    return out;
 }
 
 #endif

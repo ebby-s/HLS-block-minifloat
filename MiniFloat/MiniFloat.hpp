@@ -32,12 +32,12 @@ template <int E, int M> struct MiniFloat{
     KulischAcc<WfromEM(E,M), FfromEM(E,M)> operator *(const MiniFloat<E,M> &op);
 
     //////----Methods for verification, do not synthesize.----//////
-    MiniFloat(){}
+    // MiniFloat(){}
 
-    // Constructor to initialize data before tests.
-    MiniFloat(int op){
-        data = op;
-    }
+    // // Constructor to initialize data before tests.
+    // MiniFloat(int op){
+    //     data = op;
+    // }
 
     // Convert to cpp float. Assume bias=0.
     operator float() const{
@@ -66,12 +66,12 @@ template <int W, int F> struct KulischAcc{
     // Represents a signed fixed point number.
     ap_int<W> acc;
 
-    KulischAcc(){}
-
-    // Constructor to initialize data before tests, also assigns AP values.
-    template <typename T>
-    KulischAcc(T op){
-        acc = op;
+    // Convert to cpp float. Assume bias=0.
+    template<int Wo>
+    operator KulischAcc<Wo,F>() const{
+        KulischAcc<Wo,F> out;
+        out.acc = acc;
+        return out;
     }
 
     // // Add a pair of fi numbers with equal width.
@@ -82,6 +82,13 @@ template <int W, int F> struct KulischAcc{
     inline KulischAcc<MAX(W,W2)+1,F> operator +(const KulischAcc<W2,F> &op);
 
     //////----Methods for verification, do not synthesize.----//////
+    // KulischAcc(){}
+
+    // // Constructor to initialize data before tests.
+    // KulischAcc(int op){
+    //     acc = op;
+    // }
+
     // Convert to cpp float. Assume bias=0.
     operator float() const{
         float out = acc;

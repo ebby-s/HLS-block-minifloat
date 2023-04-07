@@ -13,9 +13,9 @@ int mul_tb(){    // Test multiplier by exhaustive search.
     for(int i=0; i<pow(2,E+M+1); i++){
         for(int j=0; j<pow(2,E+M+1); j++){
 
-            op0 = i;   // Generate op0.
+            op0.data = i;   // Generate op0.
 
-            op1 = j;   // Generate op1.
+            op1.data = j;   // Generate op1.
 
             prd = op0 * op1;        // Get result from DUT.
 
@@ -47,9 +47,9 @@ int add_tb(){    // Test adder by exhaustive search.
     for(int i=0; i<pow(2,WfromEM(E,M)); i++){
         for(int j=0; j<pow(2,WfromEM(E,M)); j++){
 
-            op0 = i;   // Generate op0.
+            op0.acc = i;   // Generate op0.
 
-            op1 = j;   // Generate op1.
+            op1.acc = j;   // Generate op1.
 
             sum = op0 + op1;        // Get result from DUT.
 
@@ -83,10 +83,10 @@ int full_tb(){    // Test dot product circuit by exhaustive search.
             for(int k=0; k<pow(2,E+M+1); k++){
                 for(int l=0; l<pow(2,E+M+1); l++){
 
-                    op0 = i;   // Generate op0.
-                    op1 = j;   // Generate op1.
-                    op2 = k;   // Generate op2.
-                    op3 = l;   // Generate op3.
+                    op0.data = i;   // Generate op0.
+                    op1.data = j;   // Generate op1.
+                    op2.data = k;   // Generate op2.
+                    op3.data = l;   // Generate op3.
 
                     dot_prd = DotPrd2(op0,op1,op2,op3);    // Get result from DUT.
 
