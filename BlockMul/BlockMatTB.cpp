@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
-#include <random>
+#include <cstdlib>
+#include <typeinfo>
 
 #include "BlockMat.hpp"
 
@@ -9,22 +10,18 @@ template <int N, int E, int M>
 int bmul_tb(){    // Test block multiplier.
 
     BlockMat<N,E,M> op0, op1;                     // op0 and op1 are inputs to multiplier.
-    BlockAcc<N, WfromEM(E,M), FfromEM(E,M)> prd;  // prd = op0 * op1, output of multiplier.
-
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> rand_val(0,(1<<(E+M+1))-1);
+    BlockAcc<N, WfromEM(E,M)+CLOG2(N), FfromEM(E,M)> prd;  // prd = op0 * op1, output of multiplier.
 
     bool fail;
-    float [N][N] ref_prd;
+    float ref_prd [N][N];
 
     for(int l=0; l<(1<<(E+M+1)); l++){
 
             // Generate op0 & op1.
             for(int j=0; j<N; j++){
                 for(int k=0; k<N; k++){
-                    op0.data[j][k] = rand_val(rng);
-                    op1.data[j][k] = rand_val(rng);
+                    op0.data[j][k].data = rand() % (1<<(E+M+1));
+                    op1.data[j][k].data = rand() % (1<<(E+M+1));
                 }
             }
 
@@ -48,12 +45,22 @@ int bmul_tb(){    // Test block multiplier.
             for(int j=0; j<N; j++){
                 for(int k=0; k<N; k++){
                     if(ref_prd[j][k] != float(prd.data[j][k])){
+
+                        // std::cout << "Ref[" << j << ", " << k << "] = " << float(ref_prd[j][k]) << "\n";
+                        // std::cout << "Test[" << j << ", " << k << "] = " << float(prd.data[j][k]) << "\n";
+                        // std::cout << "Type: " << WfromEM(E,M) << CLOG2(N) << "\n";
+
                         fail = true;
                     }
                 }
             }
 
             if(fail){
+                // for(int i=0; i<N; i++) for(int j=0; j<N; j++) std::cout << "A[" << i << ", " << j << "] = " << float(op0.data[i][j]) << "\n";
+                // for(int i=0; i<N; i++) for(int j=0; j<N; j++) std::cout << "B[" << i << ", " << j << "] = " << float(op1.data[i][j]) << "\n";
+                // for(int i=0; i<N; i++) for(int j=0; j<N; j++) std::cout << "Ref[" << i << ", " << j << "] = " << float(ref_prd[i][j]) << "\n";
+                // for(int i=0; i<N; i++) for(int j=0; j<N; j++) std::cout << "Test[" << i << ", " << j << "] = " << float(prd.data[i][j]) << "\n";
+
                 printf("Block Multiplier Failed. \n");
                 std::cout << "Parameters: N=" << N << " E=" << E << " M=" << M << '\n';
                 throw 1;
@@ -70,13 +77,51 @@ int main(){
 
     try{
 
-        bmul_tb<2,0>();
-        bmul_tb<2,1>();
-        bmul_tb<2,2>();
-        bmul_tb<3,0>();
-        bmul_tb<3,1>();
-        bmul_tb<3,2>();
-        bmul_tb<4,3>();
+        bmul_tb<1,2,0>();
+        bmul_tb<1,2,1>();
+        bmul_tb<1,2,2>();
+        bmul_tb<1,3,0>();
+        bmul_tb<1,3,1>();
+        bmul_tb<1,3,2>();
+        bmul_tb<1,4,3>();
+
+        bmul_tb<2,2,0>();
+        bmul_tb<2,2,1>();
+        bmul_tb<2,2,2>();
+        bmul_tb<2,3,0>();
+        bmul_tb<2,3,1>();
+        bmul_tb<2,3,2>();
+        bmul_tb<2,4,3>();
+
+        bmul_tb<3,2,0>();
+        bmul_tb<3,2,1>();
+        bmul_tb<3,2,2>();
+        bmul_tb<3,3,0>();
+        bmul_tb<3,3,1>();
+        bmul_tb<3,3,2>();
+
+        bmul_tb<4,2,0>();
+        bmul_tb<4,2,1>();
+        bmul_tb<4,2,2>();
+        bmul_tb<4,3,0>();
+        bmul_tb<4,3,1>();
+        bmul_tb<4,3,2>();
+
+        bmul_tb<5,2,0>();
+        bmul_tb<5,2,1>();
+        bmul_tb<5,2,2>();
+        bmul_tb<5,3,0>();
+        bmul_tb<5,3,1>();
+        bmul_tb<5,3,2>();
+
+        bmul_tb<15,2,0>();
+        bmul_tb<16,2,0>();
+        bmul_tb<17,2,0>();
+        bmul_tb<32,2,0>();
+        bmul_tb<48,2,0>();
+        bmul_tb<64,2,0>();
+        bmul_tb<65,2,0>();
+        bmul_tb<127,2,0>();
 
     }catch(int e){
         std::cout << "Block Operator TB Failed.\n";

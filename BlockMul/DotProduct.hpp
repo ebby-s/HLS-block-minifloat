@@ -16,16 +16,27 @@ BlockAcc<N,WfromEM(E,M)+CLOG2(N),FfromEM(E,M)> BlockMat<N,E,M>::operator *(Block
         for (int j=0; j<N; j++) {
             #pragma HLS unroll
 
-            out.data[i][j] = 0;
+            out.data[i][j].acc = 0;
 
             for (int k=0; k<N; k++) {
                 #pragma HLS unroll
 
-                out.data[i][j] += data[i][k] * op.data[k][j];
+                KulischAcc<WfromEM(E,M)+CLOG2(N), FfromEM(E,M)> current, prd, sum;
+
+                current = out.data[i][j];
+
+                prd = data[i][k] * op.data[k][j];
+
+                sum = current + prd;
+
+                out.data[i][j] = sum;
+
+                // if((i == 23) && (j == 27)) std::cout << "Int " << k <<": " << float(current) << " + " << float(prd) << " = " << float(sum) << "\n";
             }
         }
     }
 
+    return out;
 }
 
 
