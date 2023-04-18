@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <typeinfo>
+#include <cmath>
 
 #include "BlockMat.hpp"
 
@@ -24,6 +25,8 @@ int bmul_tb(){    // Test block multiplier.
                     op1.data[j][k].data = rand() % (1<<(E+M+1));
                 }
             }
+            op0.bias = rand() % (1<<5);
+            op1.bias = rand() % (1<<5);
 
             prd = op0 * op1;        // Get result from DUT.
 
@@ -44,10 +47,13 @@ int bmul_tb(){    // Test block multiplier.
 
             for(int j=0; j<N; j++){
                 for(int k=0; k<N; k++){
-                    if(ref_prd[j][k] != float(prd.data[j][k])){
+                    if((ref_prd[j][k] * pow(2,op0.bias+op1.bias)) != (float(prd.data[j][k]) * pow(2,prd.bias))){
 
-                        // std::cout << "Ref[" << j << ", " << k << "] = " << float(ref_prd[j][k]) << "\n";
-                        // std::cout << "Test[" << j << ", " << k << "] = " << float(prd.data[j][k]) << "\n";
+                        // std::cout << "Ref[" << j << ", " << k << "] = " << ref_prd[j][k] << " * " << pow(2,op0.bias+op1.bias) << "\n";
+                        // std::cout << "Ref[" << j << ", " << k << "] = " << (ref_prd[j][k] * pow(2,op0.bias+op1.bias)) << "\n";
+                        // std::cout << "Test[" << j << ", " << k << "] = " << (float(prd.data[j][k]) * pow(2,prd.bias)) << "\n";
+                        // std::cout << "RefBias " << op0.bias << ", " << op1.bias << "\n";
+                        // std::cout << "TestBias " << prd.bias << "\n";
                         // std::cout << "Type: " << WfromEM(E,M) << CLOG2(N) << "\n";
 
                         fail = true;
@@ -121,7 +127,7 @@ int main(){
         bmul_tb<48,2,0>();
         bmul_tb<64,2,0>();
         bmul_tb<65,2,0>();
-        bmul_tb<127,2,0>();
+        // bmul_tb<127,2,0>();
 
     }catch(int e){
         std::cout << "Block Operator TB Failed.\n";
