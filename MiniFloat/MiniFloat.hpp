@@ -104,6 +104,13 @@ template <int W, int F> struct KulischAcc{
         out /= pow(2,F);
         return out;
     }
+
+    // Convert to cpp double. Assume bias=0.
+    operator double() const{
+        double out = acc;
+        out /= pow(2,F);
+        return out;
+    }
 };
 
 // Include implementations of scalar multiplication and addition.
