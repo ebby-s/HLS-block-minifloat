@@ -16,6 +16,15 @@
 #define FfromEM(E,M) (2*(M-1))
 
 
+template<int pE, int pM, int pN> struct BMFParameters{
+    static const int E = pE;
+    static const int M = pM;
+    static const int N = pN;
+
+    static const int W = WfromEM(E,M);
+    static const int F = FfromEM(E,M);
+};
+
 
 template <int E, int M> struct MiniFloat;     // MiniFloat.
 template <int W, int F> struct KulischAcc;    // Fixed Point Accumulator.
@@ -66,7 +75,7 @@ template <int W, int F> struct KulischAcc{
     // Represents a signed fixed point number.
     ap_int<W> acc;
 
-    // Convert to cpp float. Assume bias=0.
+    // Convert to different width.
     template<int Wo>
     operator KulischAcc<Wo,F>() const{
         KulischAcc<Wo,F> out;
