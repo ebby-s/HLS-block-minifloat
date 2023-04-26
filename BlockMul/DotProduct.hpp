@@ -13,7 +13,6 @@ BlockAcc<N,WfromEM(E,M)+CLOG2(N),FfromEM(E,M)> BlockMat<N,E,M>::operator *(Block
     // shift_amt -> initialize to max value.
     // zero_data -> if true and shift_amt is unchanged, set data to zero.
     ap_uint<CLOG2(WfromEM(E,M)+CLOG2(N)+1)> ldz, ldo, ldd, shift_amt = (WfromEM(E,M)+CLOG2(N)-1);
-    ap_int<9> bias_sum = bias + op.bias;
     bool zero_data = true;
 
     //////----Do matrix multiplication on minifloats and store results.----//////
@@ -41,18 +40,16 @@ BlockAcc<N,WfromEM(E,M)+CLOG2(N),FfromEM(E,M)> BlockMat<N,E,M>::operator *(Block
                 sum = current + prd;
 
                 out.data[i][j] = sum;
-
-                // if((i == 23) && (j == 27)) std::cout << "Int " << k <<": " << float(current) << " + " << float(prd) << " = " << float(sum) << "\n";
             }
 
             // Update shift_amt based on leading 0s or 1s.
             ldz = 0;
             ldo = 0;
 
-            for(int k=WfromEM(E,M)-1; ((k>=0) && out.data[i][j].acc[k]); k--)
+            for(int k=WfromEM(E,M)+CLOG2(N)-1; ((k>=0) && out.data[i][j].acc[k]); k--)
                 ldo++;
 
-            for(int k=WfromEM(E,M)-1; ((k>=0) && !out.data[i][j].acc[k]); k--)
+            for(int k=WfromEM(E,M)+CLOG2(N)-1; ((k>=0) && !out.data[i][j].acc[k]); k--)
                 ldz++;
 
             ldd = (ldo == 0) ? ldz : ldo;
@@ -67,28 +64,37 @@ BlockAcc<N,WfromEM(E,M)+CLOG2(N),FfromEM(E,M)> BlockMat<N,E,M>::operator *(Block
         }
     }
 
-    // std::cout << "ShiftAmt = " << shift_amt << '\n';
-    // std::cout << "ValBefore = " << out.data[0][0].acc << '\n';
 
-    // Calculate output bias, update shift amount.
+    // Calculate and adjust output bias based on shift_amt.
+    ap_int<10> bias_sum;
+    ap_uint<CLOG2(WfromEM(E,M)+CLOG2(N)+1)> underflow = 0;
+
+    bias_sum = bias + op.bias;
+
+    // Check if data is all zero, adjust bias_sum.
     if(shift_amt == (WfromEM(E,M)+CLOG2(N)-1) && zero_data){
-        out.bias = 0;
         shift_amt = WfromEM(E,M)+CLOG2(N);
-    }else if(shift_amt > bias_sum){
-        out.bias = 0;
-        shift_amt = bias_sum;
+        bias_sum = 0;
     }else{
-        out.bias = bias_sum - shift_amt;
+        bias_sum = bias_sum - shift_amt;
     }
 
-    // Shift data values.
+    // Check for bias overflow/underflow.
+    if(bias_sum >= (1 << (8-1))){
+        bias_sum = (1 << (8-1)) - 1;
+    }else if(bias_sum < -(1 << (8-1))){
+        bias_sum = 0;
+        shift_amt = WfromEM(E,M)+CLOG2(N);
+    }
+
+    // Set output bias and apply shift to data.
+    out.bias = bias_sum;
+
     for(int i=0; i<N; i++){
         for(int j=0; j<N; j++){
             out.data[i][j].acc = out.data[i][j].acc << shift_amt;
         }
     }
-
-    // std::cout << "ValAfter = " << out.data[0][0].acc << '\n';
 
     return out;
 }
