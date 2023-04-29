@@ -5,13 +5,13 @@
 #include "DotPrd2.hpp"
 
 template <int E, int M>
-int mul_tb(){    // Test multiplier by exhaustive search.
+int MiniFloat_mul_tb(){    // Test MiniFloat multiplier by exhaustive search.
 
-    MiniFloat<E,M> op0, op1;                     // op0, op1 -> test multiplier inputs.
-    KulischAcc<WfromEM(E,M), FfromEM(E,M)> prd;  // prd = op0 * op1, test multiplier output.
+    MiniFloat<E,M> op0, op1;                 // op0, op1 -> test multiplier inputs.
+    IntAcc<WfromEM(E,M), FfromEM(E,M)> prd;  // prd = op0 * op1, test multiplier output.
 
     // Log parameters.
-    std::cout << "[INFO] Testing Parameters: E=" << E << " M=" << M << " W=" << WfromEM(E,M) << " F=" << FfromEM(E,M) << '\n';
+    std::cout << "[INFO] MiniFloat Mul, Parameters: E=" << E << " M=" << M << " W=" << WfromEM(E,M) << " F=" << FfromEM(E,M) << '\n';
 
     for(int i=0; i<pow(2,E+M+1); i++){
         for(int j=0; j<pow(2,E+M+1); j++){
@@ -29,33 +29,68 @@ int mul_tb(){    // Test multiplier by exhaustive search.
                 std::cout << "op0: " << op0.data << "op1: " << op1.data << '\n';
                 //std::cout << "prd: " << prd.acc << '\n';
 
-                printf("[ERROR] Multiplier Failed.\n");
+                printf("[ERROR] FAILED\n");
                 throw 1;
             }
         }
     }
 
-    printf("[INFO] Multiplier Passed.\n");
+    printf("[INFO] Pass\n");
     return 0;
 }
 
-template<int E, int M>
-int add_tb(){    // Test adder by exhaustive search.
+template <int W, int F>
+int IntAcc_mul_tb(){    // Test IntAcc multiplier by exhaustive search.
 
-    KulischAcc<WfromEM(E,M),   FfromEM(E,M)> op0, op1;  // op0, op1 -> test adder inputs.
-    KulischAcc<WfromEM(E,M)+1, FfromEM(E,M)> sum;       // sum = op0 + op1, test adder output.
+    IntAcc<W,   F> op0, op1;  // op0, op1 -> test multiplier inputs.
+    IntAcc<2*W, F> prd;       // prd = op0 * op1, test multiplier output.
 
     // Log parameters.
-    std::cout << "[INFO] Testing Parameters: E=" << E << " M=" << M << " W=" << WfromEM(E,M) << " F=" << FfromEM(E,M) << '\n';
+    std::cout << "[INFO] IntAcc Mul, Parameters: W=" << W << " F=" << F << '\n';
+
+    for(int i=0; i<pow(2,W); i++){
+        for(int j=0; j<pow(2,W); j++){
+
+            op0.acc = i;   // Generate op0.
+
+            op1.acc = j;   // Generate op1.
+
+            prd = op0 * op1;   // Get result from DUT.
+
+            // Compare DUT result to reference done in float(f32).
+            // Assuming f32 has sufficient precision to represent mul_out_t without error.
+            if((float(op0) * float(op1)) != float(prd)){
+                std::cout << '\n' << float(op0) << " * " << float(op1) << " = " << float(prd) << '\n';
+                std::cout << "op0: " << op0.acc << "op1: " << op1.acc << '\n';
+                //std::cout << "prd: " << prd.acc << '\n';
+
+                printf("[ERROR] FAILED\n");
+                throw 1;
+            }
+        }
+    }
+
+    printf("[INFO] Pass\n");
+    return 0;
+}
+
+template<int W, int F>
+int IntAcc_add_tb(){    // Test adder by exhaustive search.
+
+    IntAcc<W,   F> op0, op1;  // op0, op1 -> test adder inputs.
+    IntAcc<W+1, F> sum;       // sum = op0 + op1, test adder output.
+
+    // Log parameters.
+    std::cout << "[INFO] IntAcc Add, Parameters: W=" << W << " F=" << F << '\n';
 
     // Abort if W is large, use random testing instead.
-    if(WfromEM(E,M) > 13){
+    if(W > 13){
         printf("[ERROR] W is large, use random adder test.\n");
         throw 1;
     }
 
-    for(int i=0; i<pow(2,WfromEM(E,M)); i++){
-        for(int j=0; j<pow(2,WfromEM(E,M)); j++){
+    for(int i=0; i<pow(2,W); i++){
+        for(int j=0; j<pow(2,W); j++){
 
             op0.acc = i;   // Generate op0.
 
@@ -69,24 +104,24 @@ int add_tb(){    // Test adder by exhaustive search.
                 std::cout << '\n' << float(op0) << " + " << float(op1) << " = " << float(sum) << '\n';
                 //std::cout << "op0: " << op0.acc << "op1: " << op1.acc << "sum: " << sum.acc << '\n';
 
-                printf("[ERROR] Adder Failed.\n");
+                printf("[ERROR] FAILED\n");
                 throw 1;
             }
         }
     }
 
-    printf("[INFO] Adder Passed.\n");
+    printf("[INFO] Pass\n");
     return 0;
 }
 
-template<int E, int M>
-int add_tb_rand(){    // Test adder by random search.
+template<int W, int F>
+int IntAcc_add_tb_rand(){    // Test adder by random search.
 
-    KulischAcc<WfromEM(E,M),   FfromEM(E,M)> op0, op1;  // op0, op1 -> test adder inputs.
-    KulischAcc<WfromEM(E,M)+1, FfromEM(E,M)> sum;       // sum = op0 + op1, test adder output.
+    IntAcc<W,   F> op0, op1;  // op0, op1 -> test adder inputs.
+    IntAcc<W+1, F> sum;       // sum = op0 + op1, test adder output.
 
     // Log parameters.
-    std::cout << "[INFO] Testing Parameters: E=" << E << " M=" << M << " W=" << WfromEM(E,M) << " F=" << FfromEM(E,M) << '\n';
+    std::cout << "[INFO] IntAcc Add (Rand), Parameters: W=" << W << " F=" << F << '\n';
 
     for(int i=0; i<pow(2,13); i++){
         for(int j=0; j<pow(2,13); j++){
@@ -103,22 +138,22 @@ int add_tb_rand(){    // Test adder by random search.
                 std::cout << '\n' << double(op0) << " + " << double(op1) << " = " << double(sum) << '\n';
                 //std::cout << "op0: " << op0.acc << "op1: " << op1.acc << "sum: " << sum.acc << '\n';
 
-                printf("[ERROR] Adder Failed (Random).\n");
+                printf("[ERROR] FAILED\n");
                 throw 1;
             }
         }
     }
 
-    printf("[INFO] Adder Passed (Random).\n");
+    printf("[INFO] Pass\n");
     return 0;
 }
 
 
 template<int E, int M>
-int full_tb(){    // Test dot product circuit by exhaustive search.
+int DP2_tb(){    // Test dot product circuit by exhaustive search.
 
     MiniFloat<E,M> op0, op1, op2, op3;               // [op0, op2], [op1, op3] -> test inputs to DP circuit.
-    KulischAcc<WfromEM(E,M)+1, 2*(M-1)> dot_prd;     // dot_prd = op0*op1 + op2*op3, test output of DP circuit.
+    IntAcc<WfromEM(E,M)+1, 2*(M-1)> dot_prd;     // dot_prd = op0*op1 + op2*op3, test output of DP circuit.
 
     // Log parameters.
     std::cout << "[INFO] Testing Parameters: E=" << E << " M=" << M << " W=" << WfromEM(E,M) << " F=" << FfromEM(E,M) << '\n';
@@ -157,24 +192,31 @@ int main(){
 
     try{
 
-        mul_tb<2,0>();
-        mul_tb<2,1>();
-        mul_tb<2,2>();
-        mul_tb<3,0>();
-        mul_tb<3,1>();
-        mul_tb<3,2>();
-        mul_tb<4,3>();
+        MiniFloat_mul_tb<2,0>();
+        MiniFloat_mul_tb<2,1>();
+        MiniFloat_mul_tb<2,2>();
+        MiniFloat_mul_tb<3,0>();
+        MiniFloat_mul_tb<3,1>();
+        MiniFloat_mul_tb<3,2>();
+        MiniFloat_mul_tb<4,3>();
 
-        add_tb<2,0>();
-        add_tb<2,1>();
-        add_tb<2,2>();
+        IntAcc_mul_tb<2,0>();
+        IntAcc_mul_tb<3,0>();
+        IntAcc_mul_tb<4,0>();
+        IntAcc_mul_tb<5,0>();
+        IntAcc_mul_tb<8,0>();
+        IntAcc_mul_tb<9,0>();
 
-        add_tb_rand<3,0>();
-        add_tb_rand<3,1>();
-        add_tb_rand<3,2>();
-        add_tb_rand<4,3>();
+        IntAcc_add_tb<WfromEM(2,0), FfromEM(2,0)>();
+        IntAcc_add_tb<WfromEM(2,1), FfromEM(2,1)>();
+        IntAcc_add_tb<WfromEM(2,2), FfromEM(2,2)>();
 
-        full_tb<Et,Mt>();
+        IntAcc_add_tb_rand<WfromEM(3,0), FfromEM(3,0)>();
+        IntAcc_add_tb_rand<WfromEM(3,1), FfromEM(3,1)>();
+        IntAcc_add_tb_rand<WfromEM(3,2), FfromEM(3,2)>();
+        IntAcc_add_tb_rand<WfromEM(4,3), FfromEM(4,3)>();
+
+        DP2_tb<Et,Mt>();
 
     }catch(int e){
         std::cout << "Scalar Operator TB Failed.\n";
