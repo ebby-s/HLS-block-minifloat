@@ -15,8 +15,8 @@
 
 // Macros for calculating W and F from E and M, without loss of precision.
 // F = -2*(M-1) when representing the product of 2 MiniFloats (assume bias=0).
-#define WfromEM(E,M) (2*((1<<E)+M))
-#define FfromEM(E,M) (2*(M-1))
+#define WPRD(E,M) (2*((1<<E)+M))
+#define FPRD(E,M) (2*(M-1))
 
 
 template <int E, int M> struct MiniFloat;     // MiniFloat.
@@ -29,7 +29,7 @@ template <int E, int M> struct MiniFloat{
     ap_uint<1+E+M> data;
 
     // Multiply a pair of MiniFloats and produce an IntAcc.
-    IntAcc<WfromEM(E,M), FfromEM(E,M)> operator *(const MiniFloat<E,M> &op);
+    IntAcc<WPRD(E,M), FPRD(E,M)> operator *(const MiniFloat<E,M> &op);
 
     //////----Methods for verification, do not synthesize.----//////
     // Convert to cpp float. Assume bias=0.

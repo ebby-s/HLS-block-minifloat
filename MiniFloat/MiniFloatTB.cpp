@@ -8,10 +8,10 @@ template <int E, int M>
 int MiniFloat_mul_tb(){    // Test MiniFloat multiplier by exhaustive search.
 
     MiniFloat<E,M> op0, op1;                 // op0, op1 -> test multiplier inputs.
-    IntAcc<WfromEM(E,M), FfromEM(E,M)> prd;  // prd = op0 * op1, test multiplier output.
+    IntAcc<WPRD(E,M), FPRD(E,M)> prd;  // prd = op0 * op1, test multiplier output.
 
     // Log parameters.
-    std::cout << "[INFO] MiniFloat Mul, Parameters: E=" << E << " M=" << M << " W=" << WfromEM(E,M) << " F=" << FfromEM(E,M) << '\n';
+    std::cout << "[INFO] MiniFloat Mul, Parameters: E=" << E << " M=" << M << " W=" << WPRD(E,M) << " F=" << FPRD(E,M) << '\n';
 
     for(int i=0; i<pow(2,E+M+1); i++){
         for(int j=0; j<pow(2,E+M+1); j++){
@@ -153,10 +153,10 @@ template<int E, int M>
 int DP2_tb(){    // Test dot product circuit by exhaustive search.
 
     MiniFloat<E,M> op0, op1, op2, op3;               // [op0, op2], [op1, op3] -> test inputs to DP circuit.
-    IntAcc<WfromEM(E,M)+1, 2*(M-1)> dot_prd;     // dot_prd = op0*op1 + op2*op3, test output of DP circuit.
+    IntAcc<WPRD(E,M)+1, 2*(M-1)> dot_prd;     // dot_prd = op0*op1 + op2*op3, test output of DP circuit.
 
     // Log parameters.
-    std::cout << "[INFO] Testing Parameters: E=" << E << " M=" << M << " W=" << WfromEM(E,M) << " F=" << FfromEM(E,M) << '\n';
+    std::cout << "[INFO] Testing Parameters: E=" << E << " M=" << M << " W=" << WPRD(E,M) << " F=" << FPRD(E,M) << '\n';
 
     for(int i=0; i<pow(2,E+M+1); i++){
         for(int j=0; j<pow(2,E+M+1); j++){
@@ -207,14 +207,14 @@ int main(){
         IntAcc_mul_tb<8,0>();
         IntAcc_mul_tb<9,0>();
 
-        IntAcc_add_tb<WfromEM(2,0), FfromEM(2,0)>();
-        IntAcc_add_tb<WfromEM(2,1), FfromEM(2,1)>();
-        IntAcc_add_tb<WfromEM(2,2), FfromEM(2,2)>();
+        IntAcc_add_tb<WPRD(2,0), FPRD(2,0)>();
+        IntAcc_add_tb<WPRD(2,1), FPRD(2,1)>();
+        IntAcc_add_tb<WPRD(2,2), FPRD(2,2)>();
 
-        IntAcc_add_tb_rand<WfromEM(3,0), FfromEM(3,0)>();
-        IntAcc_add_tb_rand<WfromEM(3,1), FfromEM(3,1)>();
-        IntAcc_add_tb_rand<WfromEM(3,2), FfromEM(3,2)>();
-        IntAcc_add_tb_rand<WfromEM(4,3), FfromEM(4,3)>();
+        IntAcc_add_tb_rand<WPRD(3,0), FPRD(3,0)>();
+        IntAcc_add_tb_rand<WPRD(3,1), FPRD(3,1)>();
+        IntAcc_add_tb_rand<WPRD(3,2), FPRD(3,2)>();
+        IntAcc_add_tb_rand<WPRD(4,3), FPRD(4,3)>();
 
         DP2_tb<Et,Mt>();
 

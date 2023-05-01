@@ -4,7 +4,7 @@
 
 // Multiply a pair of MiniFloats, produce error-free output. No NaN/Inf representation.
 template <int E, int M>
-IntAcc<WfromEM(E,M), FfromEM(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E,M> &op){
+IntAcc<WPRD(E,M), FPRD(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E,M> &op){
 
     ap_uint<1> sgn = data >> (E+M);
     ap_uint<E> exp = (data >> M) & ((1<<E)-1);
@@ -35,7 +35,7 @@ IntAcc<WfromEM(E,M), FfromEM(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E,
     }
 
     // Form fixed-point output.
-    IntAcc<WfromEM(E,M), FfromEM(E,M)> prd_fi;
+    IntAcc<WPRD(E,M), FPRD(E,M)> prd_fi;
 
     prd_fi.acc = prd_man;
 

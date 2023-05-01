@@ -5,8 +5,8 @@
 
 #define Et 2
 #define Mt 0
-#define Wt WfromEM(Et,Mt)
-#define Ft FfromEM(Et,Mt)
+#define Wt WPRD(Et,Mt)
+#define Ft FPRD(Et,Mt)
 
 IntAcc<Wt+CLOG2(2),Ft> DotPrd2(
     MiniFloat<Et,Mt> op0,
