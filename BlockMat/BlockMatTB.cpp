@@ -10,42 +10,26 @@
 // Helper function to calculate the number of bits required
 // to represent n using 2's cmpl format.
 int clog2l(long n){
+    // Decrease magnitude by 1 if number is negative.
+    // Take abs value before counting leading zeros.
+    n = std::labs((n < 0) ? n+1 : n); 
 
-    int count = 0;
-
-    n = (n < 0) ? n+1 : n; // Decrease magnitude by 1 if number is negative.
-
-    n = std::labs(n);  // Take abs value before counting leading zeros.
-
-    for(int i=(sizeof(long)*8)-1; i>=0; i--){
-        if(n >> i){
-            break;
-        }else{
-            count++;
+    for(int i=0; i<(sizeof(long)*8); i++){
+        if(!(n>>i)){
+            return i+1; // +1 for signed vs. unsigned.
         }
     }
-
-    return (sizeof(long)*8) - count + 1;
 }
 
+// Helper function to round integers.
+long rnd_prd(long prd, int width){
 
-double rnd_prd(double prd, int width){
+    int rnd_bits = clog2l(prd) - width;
 
-    int exp, sig;
-    double man, out;
+    if(rnd_bits > 0)
+        prd &= ~((1<<rnd_bits)-1);
 
-    man = std::frexp(prd, &exp) * pow(2,2*width+1);
-    sig = man;
-    sig >>= width+1;
-
-    if(sig != -(1<<(width-1))){
-        exp++;
-        sig = sig >> 1;
-    }
-
-    out = double(sig) * pow(2,exp-width);
-
-    return out;
+    return prd;
 }
 
 
@@ -55,8 +39,8 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
     BlockMF<N,E,M> op0, op1;                        // op0, op1 -> inputs to mat mul.
     BlockFP<N, WPRD(E,M)+CLOG2(N), FPRD(E,M)> prd;  // prd = op0 * op1, output of mat mul.
 
-    double ref_prd [N][N];   // Reference product, ignoring shared exponent.
-    int    ref_bias;         // Reference shared exponent.
+    long ref_prd [N][N];   // Reference product, ignoring shared exponent.
+    int  ref_bias;         // Reference shared exponent.
 
     // Log parameters.
     std::cout << "[INFO] BMF Mul, Parameters: N=" << N << " E=" << E << " M=" << M << '\n';
@@ -64,7 +48,7 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
     // Bias mask, test overflow/underflow with 0xff, disable with 0x3f.
     int bias_mask = test_of_uf ? (1<<8) : (1<<6);
 
-    for(int l=0; l<(1<<12); l++){    // Test with random inputs.
+    for(int l=0; l<(1<<(1+E+M)); l++){    // Test with random inputs.
 
         // Generate op0 & op1 randomly.
         for(int j=0; j<N; j++){
@@ -81,34 +65,26 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
 
         // Calculate float64 reference.
         // Keep track of most positive/negative values.
-        double ref_max_data = 0;
-        double ref_min_data = 0;
+        long ref_max_data = 0;
+        long ref_min_data = 0;
 
         for(int i=0; i<N; i++){
             for(int j=0; j<N; j++){
 
                 ref_prd[i][j] = 0;
-
                 for(int k=0; k<N; k++){
-                    ref_prd[i][j] += (double(op0.data[i][k]) * double(op1.data[k][j]));
+                    ref_prd[i][j] += (double(op0.data[i][k]) * double(op1.data[k][j])) * pow(2,FPRD(E,M));
                 }
-
                 ref_max_data = std::max(ref_prd[i][j], ref_max_data);
                 ref_min_data = std::min(ref_prd[i][j], ref_min_data);
             }
         }
 
-
         // Model normalization step.
-        long ref_max_data_int;
-        long ref_min_data_int;
         long ref_ldd;
         long ref_shift_amt;
 
-        ref_max_data_int = ref_max_data * pow(2,FPRD(E,M));  // Convert to int.
-        ref_min_data_int = ref_min_data * pow(2,FPRD(E,M));
-
-        ref_ldd = std::max(clog2l(ref_max_data_int), clog2l(ref_min_data_int));
+        ref_ldd = std::max(clog2l(ref_max_data), clog2l(ref_min_data));
 
         ref_shift_amt = WPRD(E,M)+CLOG2(N) - ref_ldd;
 
@@ -123,10 +99,8 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
         // Saturate reference bias in case of overflow.
         if(ref_bias >= (1 << (8-1))){
             ref_bias = (1 << (8-1)) -1;
-        }
-
         // Set reference to zero in case of underflow.
-        if(ref_bias < -(1 << (8-1))){
+        }else if(ref_bias < -(1 << (8-1))){
             for(int i=0; i<N; i++){
                 for(int j=0; j<N; j++){
                     ref_prd[i][j] = 0;
@@ -137,8 +111,7 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
         // Compare DUT result to float32 reference.
         for(int j=0; j<N; j++){
             for(int k=0; k<N; k++){
-
-                if((ref_prd[j][k] * pow(2,ref_bias)) != (double(prd.data[j][k]) * pow(2,prd.bias))){
+                if((ref_prd[j][k] * pow(2,ref_bias-FPRD(E,M))) != (double(prd.data[j][k]) * pow(2,prd.bias))){
 
                     // std::cout << "RefBias " << op0.bias << " + " << op1.bias << " -> " << ref_bias << "\n";
                     // std::cout << "TestBias " << prd.bias << "\n";
@@ -154,7 +127,6 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
             }
         }
     }
-
     printf("[INFO] Pass\n");
     return 0;
 }
@@ -166,8 +138,8 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
     BlockFP<N,W,F> op0, op1;  // op0, op1 -> inputs to mat mul.
     BlockFP<N,W,F> prd;       // prd = op0 * op1, output of mat mul.
 
-    double ref_prd [N][N];   // Reference product, ignoring shared exponent.
-    int    ref_bias;         // Reference shared exponent.
+    long ref_prd [N][N];   // Reference product, ignoring shared exponent.
+    int  ref_bias;         // Reference shared exponent.
 
     // Log parameters.
     std::cout << "[INFO] BFP Mul, Parameters: N=" << N << " W=" << W << " F=" << F << '\n';
@@ -192,36 +164,27 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
 
         // Calculate float64 reference.
         // Keep track of most positive/negative values.
-        double ref_max_data = 0;
-        double ref_min_data = 0;
+        long ref_max_data = 0;
+        long ref_min_data = 0;
 
         for(int i=0; i<N; i++){
             for(int j=0; j<N; j++){
 
                 ref_prd[i][j] = 0;
-
                 for(int k=0; k<N; k++){
-                    ref_prd[i][j] += (double(op0.data[i][k]) * double(op1.data[k][j]));
+                    ref_prd[i][j] += op0.data[i][k].acc * op1.data[k][j].acc;
                 }
-
                 ref_prd[i][j] = rnd_prd(ref_prd[i][j], W);
-
                 ref_max_data = std::max(ref_prd[i][j], ref_max_data);
                 ref_min_data = std::min(ref_prd[i][j], ref_min_data);
             }
         }
 
-
         // Model normalization step.
-        long ref_max_data_int;
-        long ref_min_data_int;
         long ref_ldd;
         long ref_shift_amt;
 
-        ref_max_data_int = ref_max_data * pow(2,F);  // Convert to int.
-        ref_min_data_int = ref_min_data * pow(2,F);
-
-        ref_ldd = std::max(clog2l(ref_max_data_int), clog2l(ref_min_data_int));
+        ref_ldd = std::max(clog2l(ref_max_data), clog2l(ref_min_data));
 
         ref_shift_amt = 2*W+CLOG2(N) - ref_ldd;
 
@@ -236,10 +199,8 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
         // Saturate reference bias in case of overflow.
         if(ref_bias >= (1 << (8-1))){
             ref_bias = (1 << (8-1)) -1;
-        }
-
         // Set reference to zero in case of underflow.
-        if(ref_bias < -(1 << (8-1))){
+        }else if(ref_bias < -(1 << (8-1))){
             for(int i=0; i<N; i++){
                 for(int j=0; j<N; j++){
                     ref_prd[i][j] = 0;
@@ -250,7 +211,6 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
         // Compare DUT result to float32 reference.
         for(int j=0; j<N; j++){
             for(int k=0; k<N; k++){
-
                 if((ref_prd[j][k] * pow(2,ref_bias)) != (double(prd.data[j][k]) * pow(2,prd.bias))){
 
                     // std::cout << "RefBias " << op0.bias << " + " << op1.bias << " -> " << ref_bias << "\n";
@@ -266,7 +226,6 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
             }
         }
     }
-
     printf("[INFO] Pass\n");
     return 0;
 }
@@ -297,7 +256,6 @@ int bmf_to_bfp_tb(){    // Test BMP to BFP conversion with random stimulus.
         // Compare DUT result to float32 reference.
         for(int j=0; j<N; j++){
             for(int k=0; k<N; k++){
-
                 if((double(bmf_in.data[j][k]) * pow(2,bmf_in.bias)) != (double(bfp_out.data[j][k]) * pow(2,bfp_out.bias))){
 
                     std::cout << "Bias (in, out): " << bmf_in.bias << ", " << bfp_out.bias << '\n';
@@ -312,14 +270,12 @@ int bmf_to_bfp_tb(){    // Test BMP to BFP conversion with random stimulus.
             }
         }
     }
-
     printf("[INFO] Pass\n");
     return 0;
 }
 
 
 int main(){
-
     try{
 
         bmf_mul_tb<1,2,0>();
