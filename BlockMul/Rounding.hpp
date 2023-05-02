@@ -20,16 +20,16 @@
 // };
 
 
-template<int W_i, int W_o> class Rounding{
+template<int N, int W, int F> class Rounding{
     public:
-    virtual ap_int<W_o+1> round(ap_int<W_i> op){};
+    virtual ap_int<W+1> rnd_mul(ap_int<2*W> op){};
 };
 
 
-template<int W_i, int W_o> class ToZero : public Rounding<W_i,W_o>{
+template<int N, int W, int F> class ToZero : public Rounding<N,W,F>{
     public:
-    ap_int<W_o+1> round(ap_int<W_i> op){
-        return op >> (W_i - W_o);
+    ap_int<W+1> rnd_mul(ap_int<2*W> op){
+        return op >> W;
     }
 };
 
