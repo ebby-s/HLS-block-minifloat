@@ -45,8 +45,8 @@ template<int N, int W, int F> struct BlockFP{
 
 
 // Include implementations of block multiplication and normalization.
-#include "DotProduct.hpp"
+#include "BlockMul.hpp"
 //#include "BlockAdd.hpp"
-#include "Conversion.hpp"
+#include "BlockConv.hpp"
 
 #endif
