@@ -29,6 +29,26 @@ int clog2l(long n){
 }
 
 
+double rnd_prd(double prd, int width){
+
+    int exp, sig;
+    double man, out;
+
+    man = std::frexp(prd, &exp) * pow(2,2*width+1);
+    sig = man;
+    sig >>= width+1;
+
+    if(sig != -(1<<(width-1))){
+        exp++;
+        sig = sig >> 1;
+    }
+
+    out = double(sig) * pow(2,exp-width);
+
+    return out;
+}
+
+
 template <int N, int E, int M>
 int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random stimulus.
 
@@ -44,7 +64,7 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
     // Bias mask, test overflow/underflow with 0xff, disable with 0x3f.
     int bias_mask = test_of_uf ? (1<<8) : (1<<6);
 
-    for(int l=0; l<(1<<(E+M+1)); l++){    // Test with random inputs.
+    for(int l=0; l<(1<<12); l++){    // Test with random inputs.
 
         // Generate op0 & op1 randomly.
         for(int j=0; j<N; j++){
@@ -143,7 +163,7 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
 template <int N, int W, int F>
 int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random stimulus.
 
-    BlockMF<N,W,F> op0, op1;  // op0, op1 -> inputs to mat mul.
+    BlockFP<N,W,F> op0, op1;  // op0, op1 -> inputs to mat mul.
     BlockFP<N,W,F> prd;       // prd = op0 * op1, output of mat mul.
 
     double ref_prd [N][N];   // Reference product, ignoring shared exponent.
@@ -155,7 +175,7 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
     // Bias mask, test overflow/underflow with 0xff, disable with 0x3f.
     int bias_mask = test_of_uf ? (1<<8) : (1<<6);
 
-    for(int l=0; l<(1<<W); l++){    // Test with random inputs.
+    for(int l=0; l<(1<<12); l++){    // Test with random inputs.
 
         // Generate op0 & op1 randomly.
         for(int j=0; j<N; j++){
@@ -184,6 +204,8 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
                     ref_prd[i][j] += (double(op0.data[i][k]) * double(op1.data[k][j]));
                 }
 
+                ref_prd[i][j] = rnd_prd(ref_prd[i][j], W);
+
                 ref_max_data = std::max(ref_prd[i][j], ref_max_data);
                 ref_min_data = std::min(ref_prd[i][j], ref_min_data);
             }
@@ -196,12 +218,12 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
         long ref_ldd;
         long ref_shift_amt;
 
-        ref_max_data_int = ref_max_data * pow(2,FPRD(E,M));  // Convert to int.
-        ref_min_data_int = ref_min_data * pow(2,FPRD(E,M));
+        ref_max_data_int = ref_max_data * pow(2,F);  // Convert to int.
+        ref_min_data_int = ref_min_data * pow(2,F);
 
         ref_ldd = std::max(clog2l(ref_max_data_int), clog2l(ref_min_data_int));
 
-        ref_shift_amt = WPRD(E,M)+CLOG2(N) - ref_ldd;
+        ref_shift_amt = 2*W+CLOG2(N) - ref_ldd;
 
         ref_bias = op0.bias + op1.bias - ref_shift_amt;
 
@@ -230,6 +252,13 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
             for(int k=0; k<N; k++){
 
                 if((ref_prd[j][k] * pow(2,ref_bias)) != (double(prd.data[j][k]) * pow(2,prd.bias))){
+
+                    // std::cout << "RefBias " << op0.bias << " + " << op1.bias << " -> " << ref_bias << "\n";
+                    // std::cout << "TestBias " << prd.bias << "\n";
+                    // std::cout << "Inputs " << double(op0.data[j][k]) << " * " << double(op1.data[j][k]) << "\n";
+                    // std::cout << "Ref[" << j << ", " << k << "] = " << double(ref_prd[j][k]) << "\n";
+                    // std::cout << "Test[" << j << ", " << k << "] = " << double(prd.data[j][k]) << "\n";
+                    // std::cout << "Ref. SAmt: " << ref_shift_amt << ", " << ref_max_data << '\n';
 
                     printf("[ERROR] FAILED\n");
                     throw 1;
@@ -342,6 +371,8 @@ int main(){
         bmf_to_bfp_tb<1,2,0,WPRD(2,0)/2,2>();
         bmf_to_bfp_tb<1,2,0,WPRD(2,0)/2,-4>();
         bmf_to_bfp_tb<1,2,0,8,2>();
+
+        bfp_mul_tb<1,4,0>();
 
     }catch(int e){
         std::cout << "Block Operator TB Failed.\n";

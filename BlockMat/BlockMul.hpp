@@ -145,13 +145,13 @@ BlockFP<N,W,F> BlockFP<N,W,F>::operator *(BlockFP<N,W,F> &op){
             for (int k=0; k<N; k++) {
                 #pragma HLS unroll
 
-                IntAcc<2*W+CLOG2(N), F> current, prd, sum;
+                IntAcc<2*W+CLOG2(N), F> current, prd_int, sum;
 
                 current = prd.data[i][j];
 
-                prd = data[i][k] * op.data[k][j];
+                prd_int = data[i][k] * op.data[k][j];
 
-                sum = current + prd;
+                sum = current + prd_int;
 
                 prd.data[i][j] = sum;
             }
@@ -208,7 +208,7 @@ BlockFP<N,W,F> BlockFP<N,W,F>::operator *(BlockFP<N,W,F> &op){
             shift_amt = 2*W+CLOG2(N);
             bias_sum = 0;
         }else{
-            bias_sum = bias_sum - shift_amt;
+            bias_sum = bias_sum + W - shift_amt;
         }
 
         prd.bias = bias_sum;
