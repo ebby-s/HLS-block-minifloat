@@ -22,7 +22,8 @@
 
 template<int N, int W, int F> class Rounding{
     public:
-    virtual ap_int<W+1> rnd_bmf(ap_int<W> op, int Wo){};
+    virtual ap_uint<W> rnd_bmf(ap_uint<W> op, int Wo){};
+    virtual ap_int<W> rnd_bfp(ap_int<W> op, int Wo){};
 };
 
 
@@ -35,7 +36,10 @@ template<int N, int W, int F> class Rounding{
 
 template<int N, int W, int F> class ToNegInf : public Rounding<N,W,F>{
     public:
-    ap_int<W+1> rnd_bmf(ap_int<W> op, int Wo){
+    ap_uint<W> rnd_bmf(ap_uint<W> op, int Wo){
+        return op >> (W - Wo);
+    }
+    ap_int<W> rnd_bfp(ap_int<W> op, int Wo){
         return op >> (W - Wo);
     }
 };

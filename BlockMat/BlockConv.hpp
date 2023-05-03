@@ -78,7 +78,6 @@ BlockMF<N,E,M>::operator BlockFP<N,WPRD(E,M)/2,FPRD(E,M)/2>() const{
 }
 
 
-
 // Convert BFP to BMF.
 template <int N, int W, int F>
 template <int E, int M>
@@ -128,7 +127,11 @@ BlockFP<N,W,F>::operator BlockMF<N,E,M>() const{
             }
 
             // Round integer to fit in mantissa.
-            out_mf.data |= (rnd_method->rnd_bmf(man_ext, M+1)) & ((1<<M)-1);
+            if(W < (M+1)){
+                out_mf.data |= (ap_uint<M>(man_ext) << (M+1-W)) & ((1<<M)-1);
+            }else{
+                out_mf.data |= (rnd_method->rnd_bmf(man_ext, M+1)) & ((1<<M)-1);
+            }
 
             out.data[i][j] = out_mf;
         }
@@ -143,6 +146,47 @@ BlockFP<N,W,F>::operator BlockMF<N,E,M>() const{
     return out;
 }
 
+
+// Round down BFP.
+template <int N, int W, int F>
+template <int Wo, int Fo>
+BlockFP<N,W,F>::operator BlockFP<N,Wo,Fo>() const{
+
+    BlockFP<N,Wo+1,Fo> rnd;
+    BlockFP<N,Wo  ,Fo> out;
+    // Records if any rounding operations overflowed.
+    bool rnd_ofl = false;
+
+    // Convert integers to MiniFloats.
+    for (int i=0; i<N; i++) {
+        #pragma HLS unroll
+        for (int j=0; j<N; j++) {
+            #pragma HLS unroll
+
+            IntAcc<Wo+1,Fo> rnd_fp;
+
+            rnd_fp.acc = rnd_method->rnd_bfp(data[i][j].acc, Wo);
+            rnd_ofl |= (rnd_fp.acc[Wo] ^ rnd_fp.acc[Wo-1]);
+            rnd.data[i][j] = rnd_fp;
+        }
+    }
+
+    // Assign output, shift if rounding caused overflow.
+    for (int i=0; i<N; i++) {
+        #pragma HLS unroll
+        for (int j=0; j<N; j++) {
+            #pragma HLS unroll
+
+            IntAcc<Wo,Fo> out_fp;
+            out_fp.acc = rnd[i][j].acc >> rnd_ofl;
+            out.data[i][j] = out_fp;
+        }
+    }
+    // Adjust bias if rounding caused overflow.
+    out.bias = bias + ((W-F)-(Wo-Fo)) + rnd_ofl;
+
+    return out;
+}
 
 
 #endif
