@@ -18,6 +18,7 @@ template<int N, int E, int M> struct BlockMF{
     // Convert a BMF block to BFP.
     template<int W, int F>
     operator BlockFP<N,W,F>() const;
+    // operator BlockFP<N,WPRD(E,M)/2,WPRD(E,M)/2>() const;
 };
 
 
@@ -35,7 +36,7 @@ template<int N, int W, int F> struct BlockFP{
         *rnd_method = rnd;
     }
 
-    BlockFP<N,W,F> operator *(BlockFP<N,W,F> &op);
+    BlockFP<N,2*W+CLOG2(N),2*F> operator *(BlockFP<N,W,F> &op);
 
     BlockFP<N,W,F> operator +(BlockFP<N,W,F> &op);  // Add a pair of matrix products with loss of precision, take bias into account.
 

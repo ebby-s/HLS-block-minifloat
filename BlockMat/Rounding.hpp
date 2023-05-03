@@ -22,14 +22,14 @@
 
 template<int N, int W, int F> class Rounding{
     public:
-    virtual ap_int<W+1> rnd_mul(ap_int<2*W> op){};
+    virtual ap_int<W+1> rnd_mul(ap_int<2*W+CLOG2(N)> op){};
 };
 
 
 template<int N, int W, int F> class ToZero : public Rounding<N,W,F>{
     public:
-    ap_int<W+1> rnd_mul(ap_int<2*W> op){
-        return op >> W;
+    ap_int<W+1> rnd_mul(ap_int<2*W+CLOG2(N)> op){
+        return op >> (W+CLOG2(N));
     }
 };
 
