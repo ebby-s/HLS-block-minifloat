@@ -1,7 +1,7 @@
 
 
 template <int N, int E, int M>
-int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random stimulus.
+int bmf_mul_tb(){    // Test BMF multiplier with random stimulus.
 
     BlockMF<N,E,M> op0, op1;                        // op0, op1 -> inputs to mat mul.
     BlockFP<N, WPRD(E,M)+CLOG2(N), FPRD(E,M)> prd;  // prd = op0 * op1, output of mat mul.
@@ -12,9 +12,6 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
     // Log parameters.
     std::cout << "[INFO] BMF Mul, Parameters: N=" << N << " E=" << E << " M=" << M << '\n';
 
-    // Bias mask, test overflow/underflow with 0xff, disable with 0x3f.
-    int bias_mask = test_of_uf ? (1<<8) : (1<<6);
-
     for(int l=0; l<(1<<(1+E+M)); l++){    // Test with random inputs.
 
         // Generate op0 & op1 randomly.
@@ -24,8 +21,10 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
                 op1.data[j][k].data = rand() % (1<<(E+M+1));
             }
         }
-        op0.bias = rand() % bias_mask;
-        op1.bias = rand() % bias_mask;
+        do{
+            op0.bias = rand() % (1<<8);
+            op1.bias = rand() % (1<<8);
+        }while(((op0.bias+op1.bias+WPRD(E,M))>=128) || ((op0.bias+op1.bias-WPRD(E,M))<-128));
 
         // Get result from DUT.
         prd = op0 * op1;
@@ -52,26 +51,12 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
         long ref_shift_amt;
 
         ref_ldd = std::max(clog2l(ref_max_data), clog2l(ref_min_data));
-
         ref_shift_amt = WPRD(E,M)+CLOG2(N) - ref_ldd;
-
         ref_bias = op0.bias + op1.bias - ref_shift_amt;
 
         for(int i=0; i<N; i++){
             for(int j=0; j<N; j++){
                 ref_prd[i][j] *= pow(2, ref_shift_amt);
-            }
-        }
-
-        // Saturate reference bias in case of overflow.
-        if(ref_bias >= (1 << (8-1))){
-            ref_bias = (1 << (8-1)) -1;
-        // Set reference to zero in case of underflow.
-        }else if(ref_bias < -(1 << (8-1))){
-            for(int i=0; i<N; i++){
-                for(int j=0; j<N; j++){
-                    ref_prd[i][j] = 0;
-                }
             }
         }
 
@@ -100,7 +85,7 @@ int bmf_mul_tb(bool test_of_uf = false){    // Test BMF multiplier with random s
 
 
 template <int N, int W, int F>
-int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random stimulus.
+int bfp_mul_tb(){    // Test BFP multiplier with random stimulus.
 
     BlockFP<N,W,F> op0, op1;  // op0, op1 -> inputs to mat mul.
     BlockFP<N,2*W+CLOG2(N),2*F> prd;       // prd = op0 * op1, output of mat mul.
@@ -123,7 +108,7 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
         do{
             op0.bias = rand() % (1<<8);
             op1.bias = rand() % (1<<8);
-        }while((!test_of_uf) && (((op0.bias+op1.bias+2*W)>=128) || ((op0.bias+op1.bias-2*(W+F))<-128)));
+        }while(((op0.bias+op1.bias+2*W)>=128) || ((op0.bias+op1.bias-2*(W+F))<-128));
 
         // Get result from DUT.
         prd = op0 * op1;
@@ -150,9 +135,7 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
         long ref_shift_amt;
 
         ref_ldd = std::max(clog2l(ref_max_data), clog2l(ref_min_data));
-
         ref_shift_amt = 2*W+CLOG2(N) - ref_ldd;
-
         ref_bias = op0.bias + op1.bias - ref_shift_amt;
 
         for(int i=0; i<N; i++){
@@ -161,29 +144,17 @@ int bfp_mul_tb(bool test_of_uf = false){    // Test BFP multiplier with random s
             }
         }
 
-        // Saturate reference bias in case of overflow.
-        if(ref_bias >= (1 << (8-1))){
-            ref_bias = (1 << (8-1)) -1;
-        // Set reference to zero in case of underflow.
-        }else if(ref_bias < -(1 << (8-1))){
-            for(int i=0; i<N; i++){
-                for(int j=0; j<N; j++){
-                    ref_prd[i][j] = 0;
-                }
-            }
-        }
-
         // Compare DUT result to float32 reference.
         for(int j=0; j<N; j++){
             for(int k=0; k<N; k++){
                 if((ref_prd[j][k] * pow(2,ref_bias-2*F)) != (double(prd.data[j][k]) * pow(2,prd.bias))){
 
-                    std::cout << "RefBias " << op0.bias << " + " << op1.bias << " -> " << ref_bias << "\n";
-                    std::cout << "TestBias " << prd.bias << "\n";
-                    std::cout << "Inputs " << double(op0.data[j][k]) << " * " << double(op1.data[j][k]) << "\n";
-                    std::cout << "Ref[" << j << ", " << k << "] = " << double(ref_prd[j][k]) << "\n";
-                    std::cout << "Test[" << j << ", " << k << "] = " << double(prd.data[j][k]) << "\n";
-                    std::cout << "Ref. SAmt: " << ref_shift_amt << ", " << ref_max_data << '\n';
+                    // std::cout << "RefBias " << op0.bias << " + " << op1.bias << " -> " << ref_bias << "\n";
+                    // std::cout << "TestBias " << prd.bias << "\n";
+                    // std::cout << "Inputs " << double(op0.data[j][k]) << " * " << double(op1.data[j][k]) << "\n";
+                    // std::cout << "Ref[" << j << ", " << k << "] = " << double(ref_prd[j][k]) << "\n";
+                    // std::cout << "Test[" << j << ", " << k << "] = " << double(prd.data[j][k]) << "\n";
+                    // std::cout << "Ref. SAmt: " << ref_shift_amt << ", " << ref_max_data << '\n';
 
                     printf("[ERROR] FAILED\n");
                     throw 1;

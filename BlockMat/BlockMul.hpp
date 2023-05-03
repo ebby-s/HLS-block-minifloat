@@ -54,13 +54,11 @@ BlockFP<N,WPRD(E,M)+CLOG2(N),FPRD(E,M)> BlockMF<N,E,M>::operator *(BlockMF<N,E,M
 
             ldd = (ldo == 0) ? ldz : ldo;
 
-            if((ldd-1) < shift_amt){
+            if((ldd-1) < shift_amt)
                 shift_amt = (ldd-1);
-            }
 
-            if((shift_amt == (WPRD(E,M)+CLOG2(N)-1)) && (ldz == 0)){
+            if((shift_amt == (WPRD(E,M)+CLOG2(N)-1)) && (ldz == 0))
                 zero_data = false;
-            }
         }
     }
 
@@ -142,13 +140,11 @@ BlockFP<N,2*W+CLOG2(N),2*F> BlockFP<N,W,F>::operator *(BlockFP<N,W,F> &op){
 
             ldd = (ldo == 0) ? ldz : ldo;
 
-            if((ldd-1) < shift_amt){
+            if((ldd-1) < shift_amt)
                 shift_amt = (ldd-1);
-            }
 
-            if((shift_amt == (2*W+CLOG2(N)-1)) && (ldz == 0)){
+            if((shift_amt == (2*W+CLOG2(N)-1)) && (ldz == 0))
                 zero_data = false;
-            }
         }
     }
 
