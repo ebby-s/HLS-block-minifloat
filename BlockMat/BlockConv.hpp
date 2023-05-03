@@ -85,26 +85,6 @@ template <int E, int M>
 BlockFP<N,W,F>::operator BlockMF<N,E,M>() const{
 
     BlockMF<N,E,M> out;
-
-    // Find the largest and smallest values.
-    // IntAcc<W,F> max_val, min_val;
-
-    // max_val.acc = 0;
-    // min_val.acc = 0;
-    // for (int i=0; i<N; i++) {
-    //     #pragma HLS unroll
-    //     for (int j=0; j<N; j++) {
-    //         #pragma HLS unroll
-
-    //         max_val.acc = (data[i][j].acc > max_val.acc) ? data[i][j].acc : max_val.acc;
-    //         min_val.acc = (data[i][j].acc < min_val.acc) ? data[i][j].acc : min_val.acc;
-    //     }
-    // }
-
-    // Check if these values can be represented in output format.
-
-    // Adjust data and bias if needed.
-
     // Convert integers to MiniFloats.
     for (int i=0; i<N; i++) {
         #pragma HLS unroll
@@ -127,13 +107,24 @@ BlockFP<N,W,F>::operator BlockMF<N,E,M>() const{
             for(int k=W-1; ((k>=0) && (!man_ext[k])); k--)
                 ldz++;
 
-            if(man_ext != 0){
-                out_mf.data |= (W-ldz-1) << M;
-            }
-            if(ldz == (W-1)){
-                man_ext <<= ldz-1;
+            if((W-1) >= (1<<E)){
+                if(ldz < ((1<<E)-1)){
+                    out_mf.data |= (((1<<E)-1)-ldz) << M;
+                }
+                if(ldz >= ((1<<E)-1)){
+                    man_ext <<= ((1<<E)-1)-1;
+                }else{
+                    man_ext <<= ldz;
+                }
             }else{
-                man_ext <<= ldz;
+                if(man_ext != 0){
+                    out_mf.data |= (W-ldz-1) << M;
+                }
+                if(ldz == (W-1)){
+                    man_ext <<= ldz-1;
+                }else{
+                    man_ext <<= ldz;
+                }
             }
 
             // Round integer to fit in mantissa.
@@ -142,7 +133,12 @@ BlockFP<N,W,F>::operator BlockMF<N,E,M>() const{
             out.data[i][j] = out_mf;
         }
     }
-    out.bias = bias - F;
+
+    if((W-1) >= (1<<E)){
+        out.bias = bias + W - (1<<E) - F;
+    }else{
+        out.bias = bias - F;
+    }
 
     return out;
 }

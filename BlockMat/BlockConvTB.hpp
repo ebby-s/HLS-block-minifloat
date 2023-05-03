@@ -65,7 +65,7 @@ int bfp_to_bmf_tb(){    // Test BFP to BMF conversion with random stimulus.
         }
         do{
             bfp_in.bias = rand() % (1<<8);
-        }while(((bfp_in.bias+F)>=128) || ((bfp_in.bias-F)<-128));
+        }while(((bfp_in.bias+W-(1<<E)-F)>=128) || ((bfp_in.bias-F)<-128));
 
         // Get result from DUT.
         bmf_out = bfp_in;
@@ -73,11 +73,13 @@ int bfp_to_bmf_tb(){    // Test BFP to BMF conversion with random stimulus.
         // Compare DUT result to float32 reference.
         for(int j=0; j<N; j++){
             for(int k=0; k<N; k++){
-                if((double(bfp_in.data[j][k]) * pow(2,bfp_in.bias)) != (double(bmf_out.data[j][k]) * pow(2,bmf_out.bias))){
+                if((rnd_ninf_u(bfp_in.data[j][k].acc,M,E,W) * pow(2,bfp_in.bias-F)) != (double(bmf_out.data[j][k]) * pow(2,bmf_out.bias))){
 
+                    std::cout << "Coords: " << j << ", " << k << '\n';
                     std::cout << "Bias (in, out): " << bfp_in.bias << ", " << bmf_out.bias << '\n';
                     std::cout << "MF (in, out): " << double(bfp_in.data[j][k]) << ", " << double(bmf_out.data[j][k]) << '\n';
                     std::cout << "Raw (in, out): " << bfp_in.data[j][k].acc << ", " << bmf_out.data[j][k].data << '\n';
+                    std::cout << "Rounded: " << rnd_ninf_u(bfp_in.data[j][k].acc,M,E,W) << '\n';
                     std::cout << WPRD(E,M)/2 << '\n';
                     std::cout << FPRD(E,M)/2 << '\n';
 
