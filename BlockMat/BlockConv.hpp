@@ -3,12 +3,10 @@
 
 
 template<int N, int E, int M>
-template<int W, int F>
-BlockMF<N,E,M>::operator BlockFP<N,W,F>() const{
+BlockMF<N,E,M>::operator BlockFP<N,WPRD(E,M)/2,FPRD(E,M)/2>() const{
 
-    // Declare intermediate and output.
-    BlockFP<N,WPRD(E,M)/2,FPRD(E,M)/2> conv;
-    BlockFP<N,W,F> out;
+    // Declare output.
+    BlockFP<N,WPRD(E,M)/2,FPRD(E,M)/2> out;
 
     //////----Calculations for bias.----//////
     // ldz/ldo   -> leading zeroes/ones.
@@ -21,7 +19,6 @@ BlockMF<N,E,M>::operator BlockFP<N,W,F>() const{
     // Convert to BlockFP with no loss in accuracy.
     for (int i=0; i<N; i++) {
         #pragma HLS unroll
-
         for (int j=0; j<N; j++) {
             #pragma HLS unroll
 
@@ -30,39 +27,34 @@ BlockMF<N,E,M>::operator BlockFP<N,W,F>() const{
             // Extract sign and exponent.
             ap_uint<1> sgn = data[i][j].data >> (E+M);
             ap_uint<E> exp = (data[i][j].data >> M) & ((1<<E)-1);
-
             // Calculate mantissa.
             if(M == 0){
                 conv_int.acc = (exp != 0);
             }else{
                 conv_int.acc = (((exp != 0) << M) | (data[i][j].data & ((1<<M)-1)));
             }
-
-            conv_int.acc <<= (exp - 1);
-
+            if(exp) conv_int.acc <<= exp-1;
             if(sgn) conv_int.acc *= -1;
 
-            conv.data[i][j] = conv_int;
+            out.data[i][j] = conv_int;
 
             // Update shift_amt based on leading 0s or 1s.
             ldz = 0;
             ldo = 0;
 
-            for(int k=WPRD(E,M)/2-1; ((k>=0) && conv.data[i][j].acc[k]); k--)
+            for(int k=WPRD(E,M)/2-1; ((k>=0) && out.data[i][j].acc[k]); k--)
                 ldo++;
 
-            for(int k=WPRD(E,M)/2-1; ((k>=0) && !conv.data[i][j].acc[k]); k--)
+            for(int k=WPRD(E,M)/2-1; ((k>=0) && !out.data[i][j].acc[k]); k--)
                 ldz++;
 
             ldd = (ldo == 0) ? ldz : ldo;
 
-            if((ldd-1) < shift_amt){
+            if((ldd-1) < shift_amt)
                 shift_amt = (ldd-1);
-            }
 
-            if((shift_amt == (WPRD(E,M)/2-1)) && (ldz == 0)){
+            if((shift_amt == (WPRD(E,M)/2-1)) && (ldz == 0))
                 zero_data = false;
-            }
         }
     }
 
@@ -70,53 +62,16 @@ BlockMF<N,E,M>::operator BlockFP<N,W,F>() const{
     // Check if data is all zero, adjust bias_sum.
     if(shift_amt == (WPRD(E,M)/2-1) && zero_data){
         shift_amt = WPRD(E,M)/2;
-        conv.bias = 0;
+        out.bias = 0;
     }else{
-        conv.bias = bias - shift_amt;
+        out.bias = bias - shift_amt;
     }
 
     // Apply shift to data.
     for(int i=0; i<N; i++){
         for(int j=0; j<N; j++){
-            conv.data[i][j].acc = conv.data[i][j].acc << shift_amt;
+            out.data[i][j].acc = out.data[i][j].acc << shift_amt;
         }
-    }
-
-    // Convert widths to desired output width.
-    if(W >= (WPRD(E,M)/2)){
-
-        for (int i=0; i<N; i++) {
-            #pragma HLS unroll
-
-            for (int j=0; j<N; j++) {
-                #pragma HLS unroll
-
-                IntAcc<W,F> out_int;
-                out_int.acc = conv.data[i][j].acc;
-                out_int.acc <<= (W - WPRD(E,M)/2);
-                out.data[i][j] = out_int;
-            }
-        }
-
-        out.bias = conv.bias + (F - (FPRD(E,M)/2)) - (W - (WPRD(E,M)/2));
-
-    // If desired width is short, add rounding (round towards zero).
-    }else{
-
-        for (int i=0; i<N; i++) {
-            #pragma HLS unroll
-
-            for (int j=0; j<N; j++) {
-                #pragma HLS unroll
-
-                IntAcc<W,F> out_int;
-                conv.data[i][j].acc >>= (WPRD(E,M)/2 - W);
-                out_int.acc = conv.data[i][j].acc;
-                out.data[i][j] = out_int;
-            }
-        }
-
-        out.bias = conv.bias + (F - (FPRD(E,M)/2)) - (W - (WPRD(E,M)/2));
     }
 
     return out;

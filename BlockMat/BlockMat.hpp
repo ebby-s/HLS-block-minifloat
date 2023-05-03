@@ -16,9 +16,7 @@ template<int N, int E, int M> struct BlockMF{
     BlockFP<N,WPRD(E,M)+CLOG2(N),FPRD(E,M)> operator *(BlockMF<N,E,M> &op);  // Multiply a pair of blocks.
 
     // Convert a BMF block to BFP.
-    template<int W, int F>
-    operator BlockFP<N,W,F>() const;
-    // operator BlockFP<N,WPRD(E,M)/2,WPRD(E,M)/2>() const;
+    operator BlockFP<N,WPRD(E,M)/2,FPRD(E,M)/2>() const;
 };
 
 

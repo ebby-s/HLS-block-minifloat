@@ -8,7 +8,9 @@ bfp_mul_frmts = ['4,0','4,1','4,2','5,0','5,1','5,2','6,3']
 bfp_mul_range = [str(n) for n in range(1,5)]
 bfp_mul_ext   = ['15','16','17','32','48']
 
-
+bmf_bfp_frmts = ['2,0','2,1','2,2','3,0','3,1','3,2','4,3']
+bmf_bfp_range = [str(n) for n in range(1,5)]
+bmf_bfp_ext   = ['15','16','17','32','48','64','65']
 
 
 
@@ -55,14 +57,16 @@ for ext in bfp_mul_ext:
 
 tb_file.write('\n')
 
+for n in bmf_bfp_range:
+    for config in bmf_bfp_frmts:
+        tb_file.write('\t\tbmf_to_bfp_tb<'+n+','+config+'>();\n')
+    tb_file.write('\n')
 
-tb_file.write('''
-        // bmf_to_bfp_tb<1,2,0,WPRD(2,0)/2,FPRD(2,0)/2>();
-        // bmf_to_bfp_tb<1,2,0,WPRD(2,0)/2,2>();
-        // bmf_to_bfp_tb<1,2,0,WPRD(2,0)/2,-4>();
-        // bmf_to_bfp_tb<1,2,0,8,2>();
+for ext in bmf_bfp_ext:
+    tb_file.write('\t\tbmf_to_bfp_tb<'+ext+',2,0>();\n')
 
-''')
+tb_file.write('\n')
+
 
 
 tb_file.write('''
