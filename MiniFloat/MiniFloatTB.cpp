@@ -42,8 +42,8 @@ int MiniFloat_mul_tb(){    // Test MiniFloat multiplier by exhaustive search.
 template <int W, int F>
 int IntAcc_mul_tb(){    // Test IntAcc multiplier by exhaustive search.
 
-    IntAcc<W,   F> op0, op1;  // op0, op1 -> test multiplier inputs.
-    IntAcc<2*W, F> prd;       // prd = op0 * op1, test multiplier output.
+    IntAcc<  W,  F> op0, op1;  // op0, op1 -> test multiplier inputs.
+    IntAcc<2*W,2*F> prd;       // prd = op0 * op1, test multiplier output.
 
     // Log parameters.
     std::cout << "[INFO] IntAcc Mul, Parameters: W=" << W << " F=" << F << '\n';
@@ -206,6 +206,13 @@ int main(){
         IntAcc_mul_tb<5,0>();
         IntAcc_mul_tb<8,0>();
         IntAcc_mul_tb<9,0>();
+
+        IntAcc_mul_tb<6,-3>();
+        IntAcc_mul_tb<6,-2>();
+        IntAcc_mul_tb<6,-1>();
+        IntAcc_mul_tb<6,1>();
+        IntAcc_mul_tb<6,2>();
+        IntAcc_mul_tb<6,3>();
 
         IntAcc_add_tb<WPRD(2,0), FPRD(2,0)>();
         IntAcc_add_tb<WPRD(2,1), FPRD(2,1)>();

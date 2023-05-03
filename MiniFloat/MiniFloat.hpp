@@ -85,7 +85,7 @@ template <int W, int F> struct IntAcc{
         return out;
     }
 
-    IntAcc<2*W,F> operator *(const IntAcc<W,F> &op);
+    IntAcc<2*W,2*F> operator *(const IntAcc<W,F> &op);
 
     // Add a pair of fi numbers with arbitrary widths.
     template<int W2>
