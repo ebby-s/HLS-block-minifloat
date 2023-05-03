@@ -22,23 +22,23 @@
 
 template<int N, int W, int F> class Rounding{
     public:
-    virtual ap_int<W+1> rnd_mul(ap_int<2*W+CLOG2(N)> op){};
+    virtual ap_int<W+1> rnd_bmf(ap_int<W> op, int Wo){};
 };
 
 
-template<int N, int W, int F> class ToZero : public Rounding<N,W,F>{
-    public:
-    ap_int<W+1> rnd_mul(ap_int<2*W+CLOG2(N)> op){
-        return op >> (W+CLOG2(N));
-    }
-};
-
-// template<int W_i, int W_o> class ToNegInf : public Rounding<W_i,W_o>{
+// template<int N, int W, int F> class ToZero : public Rounding<N,W,F>{
 //     public:
-//     ap_int<W_o+1> round(ap_int<W_i> op){
-//         return (op >> (W_i - W_o)) + ((op < 0) ? 1 : 0);
+//     ap_int<W+1> rnd_bmf(ap_int<W> op, int Wo){
+//         return op >> (W - Wo);
 //     }
 // };
+
+template<int N, int W, int F> class ToNegInf : public Rounding<N,W,F>{
+    public:
+    ap_int<W+1> rnd_bmf(ap_int<W> op, int Wo){
+        return op >> (W - Wo);
+    }
+};
 
 // template<int W_i, int W_o> class ToPosInf : public Rounding<W_i,W_o>{
 //     public:

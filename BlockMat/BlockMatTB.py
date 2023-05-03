@@ -12,7 +12,10 @@ bmf_bfp_frmts = ['2,0','2,1','2,2','3,0','3,1','3,2','4,3']
 bmf_bfp_range = [str(n) for n in range(1,5)]
 bmf_bfp_ext   = ['15','16','17','32','48','64','65']
 
-
+bfp_bmf_frmts    = ['4,4','4,4','4,4','4,4']
+bfp_bmf_frmts_in = ['4,-1','4,0','4,1','4,2']
+bfp_bmf_range    = [str(n) for n in range(1,5)]
+bfp_bmf_ext      = ['15','16','17','32','48','64','65']
 
 
 # Create TB file and generate tests.
@@ -64,6 +67,16 @@ for n in bmf_bfp_range:
 
 for ext in bmf_bfp_ext:
     tb_file.write('\t\tbmf_to_bfp_tb<'+ext+',2,0>();\n')
+
+tb_file.write('\n')
+
+for n in bfp_bmf_range:
+    for i,config in enumerate(bfp_bmf_frmts_in):
+        tb_file.write('\t\tbfp_to_bmf_tb<'+n+','+config+',4,4>();\n')
+    tb_file.write('\n')
+
+for ext in bfp_bmf_ext:
+    tb_file.write('\t\tbfp_to_bmf_tb<'+ext+',4,1,4,4>();\n')
 
 tb_file.write('\n')
 

@@ -131,6 +131,34 @@ int main(){
 		bmf_to_bfp_tb<64,2,0>();
 		bmf_to_bfp_tb<65,2,0>();
 
+		bfp_to_bmf_tb<1,4,-1,4,4>();
+		bfp_to_bmf_tb<1,4,0,4,4>();
+		bfp_to_bmf_tb<1,4,1,4,4>();
+		bfp_to_bmf_tb<1,4,2,4,4>();
+
+		bfp_to_bmf_tb<2,4,-1,4,4>();
+		bfp_to_bmf_tb<2,4,0,4,4>();
+		bfp_to_bmf_tb<2,4,1,4,4>();
+		bfp_to_bmf_tb<2,4,2,4,4>();
+
+		bfp_to_bmf_tb<3,4,-1,4,4>();
+		bfp_to_bmf_tb<3,4,0,4,4>();
+		bfp_to_bmf_tb<3,4,1,4,4>();
+		bfp_to_bmf_tb<3,4,2,4,4>();
+
+		bfp_to_bmf_tb<4,4,-1,4,4>();
+		bfp_to_bmf_tb<4,4,0,4,4>();
+		bfp_to_bmf_tb<4,4,1,4,4>();
+		bfp_to_bmf_tb<4,4,2,4,4>();
+
+		bfp_to_bmf_tb<15,4,1,4,4>();
+		bfp_to_bmf_tb<16,4,1,4,4>();
+		bfp_to_bmf_tb<17,4,1,4,4>();
+		bfp_to_bmf_tb<32,4,1,4,4>();
+		bfp_to_bmf_tb<48,4,1,4,4>();
+		bfp_to_bmf_tb<64,4,1,4,4>();
+		bfp_to_bmf_tb<65,4,1,4,4>();
+
 
     }catch(int e){
         std::cout << "Block Operator TB Failed.\n";

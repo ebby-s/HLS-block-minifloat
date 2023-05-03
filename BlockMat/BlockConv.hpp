@@ -86,40 +86,63 @@ BlockFP<N,W,F>::operator BlockMF<N,E,M>() const{
 
     BlockMF<N,E,M> out;
 
+    // Find the largest and smallest values.
+    // IntAcc<W,F> max_val, min_val;
+
+    // max_val.acc = 0;
+    // min_val.acc = 0;
+    // for (int i=0; i<N; i++) {
+    //     #pragma HLS unroll
+    //     for (int j=0; j<N; j++) {
+    //         #pragma HLS unroll
+
+    //         max_val.acc = (data[i][j].acc > max_val.acc) ? data[i][j].acc : max_val.acc;
+    //         min_val.acc = (data[i][j].acc < min_val.acc) ? data[i][j].acc : min_val.acc;
+    //     }
+    // }
+
+    // Check if these values can be represented in output format.
+
+    // Adjust data and bias if needed.
+
+    // Convert integers to MiniFloats.
     for (int i=0; i<N; i++) {
         #pragma HLS unroll
-
         for (int j=0; j<N; j++) {
             #pragma HLS unroll
 
             MiniFloat<E,M> out_mf;
+            ap_uint<W> man_ext;
+            ap_uint<CLOG2(W+1)> ldz = 0;
 
-            out_mf.data = 0;
+            // Extract sign, take abs value of data.
+            out_mf.data = (data[i][j].acc < 0) << (E+M);
+            if(data[i][j].acc < 0){
+                man_ext = -data[i][j].acc;
+            }else{
+                man_ext = data[i][j].acc;
+            }
 
-            // Round data to maximum width representable by output format.
-            ap_int<WPRD(E,M)> data_rnd = rnd_method->round(data[i][j].acc);
-
-            // Extract sign.
-            out_mf.data |= (data_rnd < 0) << (E+M);
-
-            ap_uint<WPRD(E,M)> data_u = std::abs(data_rnd);
-
-            // Count leading zeros, remove leading zeros from data.
-            ap_uint<CLOG2(WPRD(E,M)+1)> ldz = 0;
-
-            for(int k=WPRD(E,M)-1; ((k>=0) && !data_u[k]); k--)
+            // Count leading zeros, extract exponent.
+            for(int k=W-1; ((k>=0) && (!man_ext[k])); k--)
                 ldz++;
-            
-            ap_uint<WPRD(E,M)> data_shift = data_u << ldz;
 
-            // Calculate mantissa and exponent.
-            ap_uint<M+1> man_ext = rnd_method->round(data_shift);
+            if(man_ext != 0){
+                out_mf.data |= (W-ldz-1) << M;
+            }
+            if(ldz == (W-1)){
+                man_ext <<= ldz-1;
+            }else{
+                man_ext <<= ldz;
+            }
 
-
+            // Round integer to fit in mantissa.
+            out_mf.data |= (rnd_method->rnd_bmf(man_ext, M+1)) & ((1<<M)-1);
 
             out.data[i][j] = out_mf;
         }
     }
+    out.bias = bias - F;
 
     return out;
 }
