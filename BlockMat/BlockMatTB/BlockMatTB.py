@@ -31,7 +31,7 @@ bfp_bfp_ext      = ['15','16','17','32','48','65']
 
 
 # Create TB file and generate tests.
-tb_file = open('BlockMat/BlockMatTB.cpp', 'w')
+tb_file = open('BlockMat/BlockMatTB/BlockMatTB.cpp', 'w')
 
 tb_file.write(
 '''#include <iostream>
@@ -39,7 +39,7 @@ tb_file.write(
 #include <cstdlib>
 #include <cmath>
 
-#include "BlockMat.hpp"
+#include "../BlockMat.hpp"
 
 #include "HelperTB.hpp"
 #include "BlockMulTB.hpp"
@@ -100,7 +100,7 @@ if bfp_bfp_en:
     for n in bfp_bfp_range:
         for in_cfg in bfp_bfp_frmts_in:
             for out_cfg in bfp_bfp_frmts:
-                tb_file.write('\t\tbfp_to_bfp_tb<'+in_cfg+','+out_cfg+'>();\n')
+                tb_file.write('\t\tbfp_to_bfp_tb<'+n+','+in_cfg+','+out_cfg+'>();\n')
         tb_file.write('\n')
 
     for ext in bfp_bfp_ext:

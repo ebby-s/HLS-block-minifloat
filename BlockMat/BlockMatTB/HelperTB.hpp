@@ -47,21 +47,13 @@ long rnd_bmf_ninf_u(long prd, int M, int E, int W){
 }
 
 // Helper function to round signed.
-long rnd_bfp_ninf(long prd, int M=0, int E=2, int W=4){
+long rnd_bfp_ninf(long prd, int W, int Wo){
 
-    int sgn = (prd < 0) ? -1 : 1;
-
-    prd = std::labs(prd);
-
-    int man_lim = clog2lu(prd)-(M+1);
-    int rge_lim = W-((1<<E)-1)-M;
-    int lgf_lim = (M==0) ? 1 : 0;
-
-    int rnd_bits = std::max(std::max(man_lim, rge_lim), lgf_lim);
+    int rnd_bits = W - Wo;
 
     if(rnd_bits > 0)
         prd &= ~((1<<rnd_bits)-1);
 
-    return sgn*prd;
+    return prd;
 }
 

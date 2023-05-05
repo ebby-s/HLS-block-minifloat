@@ -164,8 +164,11 @@ BlockFP<N,W,F>::operator BlockFP<N,Wo,Fo>() const{
             #pragma HLS unroll
 
             IntAcc<Wo+1,Fo> rnd_fp;
-
-            rnd_fp.acc = rnd_method->rnd_bfp(data[i][j].acc, Wo);
+            if(W > Wo){
+                rnd_fp.acc = rnd_method->rnd_bfp(data[i][j].acc, Wo);
+            }else{
+                rnd_fp.acc = ap_int<Wo+1>(data[i][j].acc) << (Wo - W);
+            }
             rnd_ofl |= (rnd_fp.acc[Wo] ^ rnd_fp.acc[Wo-1]);
             rnd.data[i][j] = rnd_fp;
         }
@@ -178,7 +181,7 @@ BlockFP<N,W,F>::operator BlockFP<N,Wo,Fo>() const{
             #pragma HLS unroll
 
             IntAcc<Wo,Fo> out_fp;
-            out_fp.acc = rnd[i][j].acc >> rnd_ofl;
+            out_fp.acc = rnd.data[i][j].acc >> rnd_ofl;
             out.data[i][j] = out_fp;
         }
     }
