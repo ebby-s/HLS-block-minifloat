@@ -1,7 +1,7 @@
 #ifndef DP
 #define DP
 
-#include "MiniFloat.hpp"
+#include "../MiniFloat.hpp"
 
 #define Et 2
 #define Mt 0

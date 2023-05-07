@@ -2,7 +2,7 @@
 #include <cassert>
 
 #include "MiniFloat.hpp"
-#include "DotPrd2.hpp"
+#include "DotPrd2/DotPrd2.hpp"
 
 template <int E, int M>
 int MiniFloat_mul_tb(){    // Test MiniFloat multiplier by exhaustive search.

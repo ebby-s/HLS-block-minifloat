@@ -29,7 +29,7 @@ template <int E, int M> struct MiniFloat{
     ap_uint<1+E+M> data;
 
     // Multiply a pair of MiniFloats and produce an IntAcc.
-    IntAcc<WPRD(E,M), FPRD(E,M)> operator *(const MiniFloat<E,M> &op);
+    inline IntAcc<WPRD(E,M), FPRD(E,M)> operator *(const MiniFloat<E,M> &op);
 
     //////----Methods for verification, do not synthesize.----//////
     // Convert to cpp float. Assume bias=0.
@@ -79,13 +79,13 @@ template <int W, int F> struct IntAcc{
 
     // Convert to different width.
     template<int Wo>
-    operator IntAcc<Wo,F>() const{
+    inline operator IntAcc<Wo,F>() const{
         IntAcc<Wo,F> out;
         out.acc = acc;
         return out;
     }
 
-    IntAcc<2*W,2*F> operator *(const IntAcc<W,F> &op);
+    inline IntAcc<2*W,2*F> operator *(const IntAcc<W,F> &op);
 
     // Add a pair of fi numbers with arbitrary widths.
     template<int W2>

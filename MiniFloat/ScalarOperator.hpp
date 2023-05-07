@@ -4,7 +4,7 @@
 
 // Multiply a pair of MiniFloats, produce error-free output. No NaN/Inf representation.
 template <int E, int M>
-IntAcc<WPRD(E,M), FPRD(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E,M> &op){
+inline IntAcc<WPRD(E,M), FPRD(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E,M> &op){
 
     ap_uint<1> sgn = data >> (E+M);
     ap_uint<E> exp = (data >> M) & ((1<<E)-1);
@@ -49,7 +49,7 @@ IntAcc<WPRD(E,M), FPRD(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E,M> &op
 
 // Multiply a pair of fixed-point values, produce error-free output.
 template <int W, int F>
-IntAcc<2*W,2*F> IntAcc<W,F>::operator *(const IntAcc<W,F> &op){
+inline IntAcc<2*W,2*F> IntAcc<W,F>::operator *(const IntAcc<W,F> &op){
 
     IntAcc<2*W,2*F> out;
 
