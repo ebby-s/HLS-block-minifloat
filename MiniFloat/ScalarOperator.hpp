@@ -6,15 +6,16 @@
 template <int E, int M>
 inline IntAcc<WPRD(E,M), FPRD(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E,M> &op){
 
-    ap_uint<1> sgn = data >> (E+M);
-    ap_uint<E> exp = (data >> M) & ((1<<E)-1);
+    ap_uint<1> sgn = data[E+M];
+    ap_uint<E> exp = data(E+M-1, M);
 
-    ap_uint<1> op_sgn = op.data >> (E+M);
-    ap_uint<E> op_exp = (op.data >> M) & ((1<<E)-1);
+    ap_uint<1> op_sgn = op.data[E+M];
+    ap_uint<E> op_exp = op.data(E+M-1, M);
 
     ap_uint<1>       prd_sgn;
     ap_uint<E+1>     prd_exp;
     ap_uint<(M+1)*2> prd_man;
+    ap_int<(M+1)*2+1> prd_man_sgn;
 
     // Calculate sign of result.
     prd_sgn = sgn ^ op_sgn;
@@ -27,6 +28,8 @@ inline IntAcc<WPRD(E,M), FPRD(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E
         prd_exp += (op_exp == 0);
     }
 
+    prd_exp -= 2;
+
     // Calculate result mantissa.
     if(M == 0){
         prd_man = !((exp == 0) || (op_exp == 0));
@@ -37,12 +40,22 @@ inline IntAcc<WPRD(E,M), FPRD(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E
     // Form fixed-point output.
     IntAcc<WPRD(E,M), FPRD(E,M)> prd_fi;
 
-    prd_fi.acc = prd_man;
-
-    prd_fi.acc <<= (prd_exp - 2);
-
-    if(prd_sgn)
-        prd_fi.acc *= -1;
+    if(M == 0){
+        if(prd_sgn && prd_man){
+            prd_fi.acc = -1;
+        }else{
+            prd_fi.acc = prd_man;
+        }
+        prd_fi.acc <<= prd_exp;
+    }else{
+        if(prd_sgn){
+            prd_man_sgn = -prd_man;
+        }else{
+            prd_man_sgn = prd_man;
+        }
+        prd_fi.acc = prd_man_sgn;
+        prd_fi.acc <<= prd_exp;
+    }
 
     return prd_fi;
 }

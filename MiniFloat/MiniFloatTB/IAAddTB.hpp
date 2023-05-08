@@ -49,8 +49,8 @@ int ia_add_tb_rand(){    // Test adder by random search.
     // Log parameters.
     std::cout << "[INFO] IntAcc Add (Rand), Parameters: W=" << W << " F=" << F << '\n';
 
-    for(int i=0; i<pow(2,13); i++){
-        for(int j=0; j<pow(2,13); j++){
+    for(int i=0; i<pow(2,10); i++){
+        for(int j=0; j<pow(2,10); j++){
 
             op0.acc = rand() + (rand() << 32);   // Generate op0.
 

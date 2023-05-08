@@ -40,13 +40,13 @@ template <int E, int M> struct MiniFloat{
 
         float out = data & ((1<<M)-1);
 
-        out /= (1 << M);
+        out /= pow(2, M);
         if(exp){
             out += 1;
         }else{
             out *= 2;
         }
-        out *= (1 << exp);
+        out *= pow(2, exp);
         if(sgn) out *= -1;
         return out;
     }
@@ -59,13 +59,13 @@ template <int E, int M> struct MiniFloat{
 
         double out = data & ((1<<M)-1);
 
-        out /= (1 << M);
+        out /= pow(2, M);
         if(exp){
             out += 1;
         }else{
             out *= 2;
         }
-        out *= (1 << exp);
+        out *= pow(2, exp);
         if(sgn) out *= -1;
         return out;
     }
@@ -104,7 +104,21 @@ template <int W, int F> struct IntAcc{
 
     // Convert to cpp double. Assume bias=0.
     operator double() const{
-        double out = acc;
+        double out;
+        if(W < 65){
+            out = acc;
+        }else{
+            ap_int<W> tmp_acc = acc;
+            if(acc < 0)
+                tmp_acc *= -1;
+            
+            out = tmp_acc(W-1, 64);
+            out *= pow(2,64);
+            out += tmp_acc(63,0);
+
+            if(acc < 0)
+                out *= -1;
+        }
         out /= pow(2,F);
         return out;
     }
