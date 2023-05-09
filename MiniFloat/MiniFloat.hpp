@@ -122,9 +122,31 @@ template <int W, int F> struct IntAcc{
         out /= pow(2,F);
         return out;
     }
+
+    // Convert to cpp long double. Assume bias=0.
+    operator long double() const{
+        long double out;
+        if(W < 65){
+            out = acc;
+        }else{
+            ap_int<W> tmp_acc = acc;
+            if(acc < 0)
+                tmp_acc *= -1;
+            
+            out = tmp_acc(W-1, 64);
+            out *= pow(2,64);
+            out += tmp_acc(63,0);
+
+            if(acc < 0)
+                out *= -1;
+        }
+        out /= pow(2,F);
+        return out;
+    }
 };
 
 // Include implementations of scalar multiplication and addition.
 #include "ScalarOperator.hpp"
+#include "DotPrd.hpp"
 
 #endif
