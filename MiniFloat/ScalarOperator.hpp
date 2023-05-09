@@ -15,7 +15,6 @@ inline IntAcc<WPRD(E,M), FPRD(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E
     ap_uint<1>       prd_sgn;
     ap_uint<E+1>     prd_exp;
     ap_uint<(M+1)*2> prd_man;
-    ap_int<(M+1)*2+1> prd_man_sgn;
 
     // Calculate sign of result.
     prd_sgn = sgn ^ op_sgn;
@@ -48,6 +47,8 @@ inline IntAcc<WPRD(E,M), FPRD(E,M)> MiniFloat<E,M>::operator *(const MiniFloat<E
         }
         prd_fi.acc <<= prd_exp;
     }else{
+        ap_int<(M+1)*2+1> prd_man_sgn;
+
         if(prd_sgn){
             prd_man_sgn = -prd_man;
         }else{
