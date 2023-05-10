@@ -47,9 +47,9 @@ int ia_mul_tb_rand(){    // Test IntAcc multiplier by exhaustive search.
     for(int i=0; i<pow(2,9); i++){
         for(int j=0; j<pow(2,9); j++){
 
-            op0.acc = rand() + (rand() << 32);   // Generate op0.
+            op0.acc = rand() + (long(rand()) << 32);   // Generate op0.
 
-            op1.acc = rand() + (rand() << 32);   // Generate op1.
+            op1.acc = rand() + (long(rand()) << 32);   // Generate op1.
 
             prd = op0 * op1;   // Get result from DUT.
 

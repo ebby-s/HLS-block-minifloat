@@ -52,9 +52,9 @@ int ia_add_tb_rand(){    // Test adder by random search.
     for(int i=0; i<pow(2,10); i++){
         for(int j=0; j<pow(2,10); j++){
 
-            op0.acc = rand() + (rand() << 32);   // Generate op0.
+            op0.acc = rand() + (long(rand()) << 32);   // Generate op0.
 
-            op1.acc = rand() + (rand() << 32);   // Generate op1.
+            op1.acc = rand() + (long(rand()) << 32);   // Generate op1.
 
             sum = op0 + op1;    // Get result from DUT.
 

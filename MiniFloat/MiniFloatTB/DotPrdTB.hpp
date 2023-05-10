@@ -52,8 +52,8 @@ int ia_dp_tb(){    // Test dot product circuit by exhaustive search.
 
         // Generate inputs.
         for(int i=0; i<N; i++){
-            op0[i].acc = rand();
-            op1[i].acc = rand();
+            op0[i].acc = rand() + (long(rand()) << 32);
+            op1[i].acc = rand() + (long(rand()) << 32);
         }
 
         // Get result from DUT.
