@@ -1,11 +1,15 @@
 
 # Configurations to be tested.
+# Working: E=[2,4], M=0
+# Working: E=[2,4], M=16
+# Working: E=2, M=[0,16]
+# Working: E=4, M=[0,16]
 bmf_mul_en    = True
 bmf_mul_frmts = ['2,0','2,1','2,2','3,0','3,1','3,2','4,3']
 bmf_mul_range = [str(n) for n in range(1,5)]
 bmf_mul_ext   = ['15','16','17','32','48','64','65']
 
-bfp_mul_en    = True
+bfp_mul_en    = False
 bfp_mul_frmts = ['4,0','4,1','4,2','5,0','5,1','5,2','6,3']
 bfp_mul_range = [str(n) for n in range(1,5)]
 bfp_mul_ext   = ['15','16','17','32','48']
