@@ -23,7 +23,7 @@
 
 This library contains HLS implementations of arithmetic units to perform matrix operations using block minifloat, logarithmic block minifloat and block floating point formats. Tested in Vivado HLS. The `ap_int` library is required.
 
-Refer to the report under `docs/HLS_for_FPGA_based_BMF.pdf` for more details.
+Refer to the report under `docs/HLS_for_FPGA_based_BMF.pdf` for more details about the implementation.
 
 Refer to [this paper][BMF_link] for information about the BMF format.
 
@@ -80,9 +80,14 @@ template <int W, int F> struct IntAcc{
     template<int W2>
     inline IntAcc<MAX(W,W2)+1,F> operator +(const IntAcc<W2,F> &op);
 
+    template<int Wo>
+    inline operator IntAcc<Wo,F>() const;
+
     operator  float() const;
 
     operator double() const;
+
+    operator long double() const;
 }
 ```
 
@@ -93,6 +98,9 @@ A pair of `IntAcc` type variables, with the same parameters (`W`, `F`) can be mu
 **Addition**
 
 A pair of `IntAcc` type variables (with any widths, but same `F` parameter) can be added. The output width is calculated by taking the larger of the 2 widths and incrementing it. This is done using the `MAX(A,B)` macro. The order of additions (tree adder vs. linear reduction) does not matter as Vivado HLS optimizes the order.
+
+**Change width**
+The width of the representation can be changed. If the new width is smaller, higher bits are removed.
 
 **Conversions to C++ types**
 
@@ -198,7 +206,7 @@ Given the exponent width `E` and mantissa width `M` of a `MiniFloat` format, cal
 
 ## 2.5 Testbenches
 
-
+Testbenches for these blocks can be found in their respective folders. Eg. `MiniFloat/MiniFloatTB`. A python file is used to generate the C++ testbench file. Specific formats can be added to the configuration lists in the python file in order to test them.
 
 
 
@@ -207,9 +215,11 @@ Given the exponent width `E` and mantissa width `M` of a `MiniFloat` format, cal
 
 ## 3.1 2x1 Dot Product
 
-## 3.2 BMF Matrix Multiplier
+This example can be found in `MiniFloat/DotPrd2`. It is a circuit that computes the dot product of a pair of 2x1 vectors. The parameters in `DotPrd2.hpp` can be tweaked to change the length of the vector as well as the format used.
 
-## 3.3 BFP Matrix Multiplier
+## 3.2 Block Matrix Multiplier
+
+A Block Matrix Multiplier performs matrix multiplication with a pair of blocks of `BMF` or `BFP` values. This example can be found in `BlockMat/SubMatMul`. The parameters in `SubMstMul.hpp` can be tweaked to change the parameters of the number representation and the format itself (`BMF`/`BFP`).
 
 <a name="contributors"></a>
 # 4 Contributors
@@ -227,4 +237,5 @@ Final Year Project Supervisor: George Constantinides ([g.constantinides@imperial
 <a name="license"></a>
 # 5 License
 
+This project is under the MIT License, see `LICENSE` for details.
 

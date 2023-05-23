@@ -3,29 +3,35 @@
 
 #include "../MiniFloat.hpp"
 
-#define Ni 32
-#define Ei 3
-#define Mi 4
+// #define DP_MiniFloat   // Remove this to use IntAcc instead of MiniFloat for inputs.
 
-#define Wi 4
-#define Fi 0
+// #define DP_ProcElem    // Remove for O(N) area, O(1) time, keep for O(1) area, O(N) time.
 
-#define Wp WPRD(Ei,Mi)
-#define Fp FPRD(Ei,Mi)
-#define Cp CLOG2(Ni)
-// #define Wp (2*Wi)
-// #define Fp (2*Fi)
+#define Ni 4            // Width of input vectors.
+
+#ifdef DP_MiniFloat
+    #define Ei 3       // Parameters of input and product types.
+    #define Mi 4
+    #define Wp WPRD(Ei,Mi)
+    #define Fp FPRD(Ei,Mi)
+
+    typedef MiniFloat<Ei,Mi> inType;
+#else
+    #define Wi 4       // Parameters of input and product types.
+    #define Fi 0
+    #define Wp (2*Wi)
+    #define Fp (2*Fi)
+
+    typedef IntAcc<Wi,Fi> inType;
+#endif
+
+#define Cp CLOG2(Ni)    // Widen output accumulator depending on vector size.
 
 
 IntAcc<Wp+Cp,Fp> DotPrd2(
-    MiniFloat<Ei,Mi> op0[Ni],
-    MiniFloat<Ei,Mi> op1[Ni]
+    inType op0[Ni],
+    inType op1[Ni]
 );
 
-
-// IntAcc<Wp+Cp,Fp> DotPrd2(
-//     IntAcc<Wi,Fi> op0[Ni],
-//     IntAcc<Wi,Fi> op1[Ni]
-// );
 
 #endif
