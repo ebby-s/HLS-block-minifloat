@@ -5,7 +5,7 @@
 #include "ap_int.h"
 
 template <int W>
-ap_uint<CLOG2(W+1)> CtLZ_builtin(ap_uint<W> data){
+ap_uint<CLOG2(W+1)> __CtLZ_builtin(ap_uint<W> data){
 
     if(W <= 32){
         if(data == 0){
@@ -32,7 +32,7 @@ ap_uint<CLOG2(W+1)> CtLZ_builtin(ap_uint<W> data){
 
 
 template <int W>
-ap_uint<CLOG2(W+1)> CtLZ_custom(ap_uint<W> data){
+ap_uint<CLOG2(W+1)> __CtLZ_custom(ap_uint<W> data){
 
     ap_uint<CLOG2(W+1)> ldz;
 
@@ -49,6 +49,17 @@ ap_uint<CLOG2(W+1)> CtLZ_custom(ap_uint<W> data){
     }
 
     return ldz;
+}
+
+template <int W>
+ap_uint<CLOG2(W+1)> CtLZ(ap_uint<W> data){
+    #pragma HLS INLINE
+
+    if(W > 18){
+        return __CtLZ_builtin<W>(data);
+    }else{
+        return __CtLZ_custom<W>(data);
+    }
 }
 
 
