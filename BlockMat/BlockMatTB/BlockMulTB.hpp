@@ -10,7 +10,7 @@ int bmf_mul_tb(){    // Test BMF multiplier with random stimulus.
     int  ref_bias;         // Reference shared exponent.
 
     // Log parameters.
-    std::cout << "[INFO] BMF Mul, Parameters: N=" << N << " E=" << E << " M=" << M << '\n';
+    std::cout << "[INFO] BMF Mul, Parameters: N=" << N << " E=" << E << " M=" << M << " Norm=" << MUL_NORM << '\n';
 
     for(int l=0; l<(1<<(1+E+M)); l++){    // Test with random inputs.
 
@@ -110,7 +110,7 @@ int bmf_mul_tb(){    // Test BMF multiplier with random stimulus.
                 normalised = (prd.data[j][k].acc[WPRD(E,M)+CLOG2(N)-1] ^ prd.data[j][k].acc[WPRD(E,M)+CLOG2(N)-2]) ? true : normalised;
             }
         }
-        if(!zero_data && !normalised){
+        if(!zero_data && !normalised && MUL_NORM){
             printf("[ERROR] FAILED: Product not normalised.\n");
             throw 1;
         }
@@ -249,7 +249,7 @@ int bfp_mul_tb(){    // Test BFP multiplier with random stimulus.
                 normalised = (prd.data[j][k].acc[2*W+CLOG2(N)-1] ^ prd.data[j][k].acc[2*W+CLOG2(N)-2]) ? true : normalised;
             }
         }
-        if(!zero_data && !normalised){
+        if(!zero_data && !normalised && MUL_NORM){
             printf("[ERROR] FAILED: Product not normalised.\n");
             throw 1;
         }

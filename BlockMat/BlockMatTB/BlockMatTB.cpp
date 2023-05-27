@@ -3,13 +3,14 @@
 #include <cstdlib>
 #include <cmath>
 
+#define MUL_NORM 1
+
 #include "../BlockMat.hpp"
 
 #include "HelperTB.hpp"
 #include "BlockMulTB.hpp"
 #include "BlockConvTB.hpp"
 #include "BlockAddTB.hpp"
-
 
 int main(){
     try{
@@ -53,6 +54,82 @@ int main(){
 		bmf_mul_tb<48,2,0>();
 		bmf_mul_tb<64,2,0>();
 		bmf_mul_tb<65,2,0>();
+
+		bfp_mul_tb<1,4,0>();
+		bfp_mul_tb<1,4,1>();
+		bfp_mul_tb<1,4,2>();
+		bfp_mul_tb<1,5,0>();
+		bfp_mul_tb<1,5,1>();
+		bfp_mul_tb<1,5,2>();
+		bfp_mul_tb<1,6,3>();
+
+		bfp_mul_tb<2,4,0>();
+		bfp_mul_tb<2,4,1>();
+		bfp_mul_tb<2,4,2>();
+		bfp_mul_tb<2,5,0>();
+		bfp_mul_tb<2,5,1>();
+		bfp_mul_tb<2,5,2>();
+		bfp_mul_tb<2,6,3>();
+
+		bfp_mul_tb<3,4,0>();
+		bfp_mul_tb<3,4,1>();
+		bfp_mul_tb<3,4,2>();
+		bfp_mul_tb<3,5,0>();
+		bfp_mul_tb<3,5,1>();
+		bfp_mul_tb<3,5,2>();
+		bfp_mul_tb<3,6,3>();
+
+		bfp_mul_tb<4,4,0>();
+		bfp_mul_tb<4,4,1>();
+		bfp_mul_tb<4,4,2>();
+		bfp_mul_tb<4,5,0>();
+		bfp_mul_tb<4,5,1>();
+		bfp_mul_tb<4,5,2>();
+		bfp_mul_tb<4,6,3>();
+
+		bfp_mul_tb<15,4,0>();
+		bfp_mul_tb<16,4,0>();
+		bfp_mul_tb<17,4,0>();
+		bfp_mul_tb<32,4,0>();
+		bfp_mul_tb<48,4,0>();
+
+		bfp_add_tb<1,4,0>();
+		bfp_add_tb<1,4,1>();
+		bfp_add_tb<1,4,2>();
+		bfp_add_tb<1,5,0>();
+		bfp_add_tb<1,5,1>();
+		bfp_add_tb<1,5,2>();
+		bfp_add_tb<1,6,3>();
+
+		bfp_add_tb<2,4,0>();
+		bfp_add_tb<2,4,1>();
+		bfp_add_tb<2,4,2>();
+		bfp_add_tb<2,5,0>();
+		bfp_add_tb<2,5,1>();
+		bfp_add_tb<2,5,2>();
+		bfp_add_tb<2,6,3>();
+
+		bfp_add_tb<3,4,0>();
+		bfp_add_tb<3,4,1>();
+		bfp_add_tb<3,4,2>();
+		bfp_add_tb<3,5,0>();
+		bfp_add_tb<3,5,1>();
+		bfp_add_tb<3,5,2>();
+		bfp_add_tb<3,6,3>();
+
+		bfp_add_tb<4,4,0>();
+		bfp_add_tb<4,4,1>();
+		bfp_add_tb<4,4,2>();
+		bfp_add_tb<4,5,0>();
+		bfp_add_tb<4,5,1>();
+		bfp_add_tb<4,5,2>();
+		bfp_add_tb<4,6,3>();
+
+		bfp_add_tb<15,4,0>();
+		bfp_add_tb<16,4,0>();
+		bfp_add_tb<17,4,0>();
+		bfp_add_tb<32,4,0>();
+		bfp_add_tb<48,4,0>();
 
 
     }catch(int e){
