@@ -10,17 +10,29 @@ int bfp_norm_tb(){    // Test BFP normalisation with random stimulus.
 
     for(int l=0; l<(1<<8); l++){    // Test with random inputs.
 
-        // Generate op0 & op1 randomly.
-        for(int j=0; j<N; j++){
-            for(int k=0; k<N; k++){
-                op.data[j][k].acc = rand() % (1<<W);
-                ref_copy[j][k].acc = op.data[j][k].acc;
+        // Generate input, corner cases followed by random cases.
+        if(l==0){
+            for(int j=0; j<N; j++){
+                for(int k=0; k<N; k++){
+                    op.data[j][k].acc = 0;
+                    ref_copy.data[j][k].acc = op.data[j][k].acc;
+                }
             }
-        }
-        do{
-            op.bias = rand() % (1<<8);
+            op.bias = 0;
             ref_copy.bias = op.bias;
-        }while(((op0.bias-W)>=128) || ((op0.bias-W)<-128));
+
+        }else{
+            for(int j=0; j<N; j++){
+                for(int k=0; k<N; k++){
+                    op.data[j][k].acc = rand() % (1<<W);
+                    ref_copy.data[j][k].acc = op.data[j][k].acc;
+                }
+            }
+            do{
+                op.bias = rand() % (1<<8);
+                ref_copy.bias = op.bias;
+            }while(((op.bias-W)>=128) || ((op.bias-W)<-128));
+        }
 
         // Get result from DUT.
         op.normalise();
@@ -31,7 +43,7 @@ int bfp_norm_tb(){    // Test BFP normalisation with random stimulus.
         for(int i=0; i<N; i++){
             for(int j=0; j<N; j++){
 
-                zero_data = (op[i][j].acc != 0) ? false : zero_data;
+                zero_data = (op.data[i][j].acc != 0) ? false : zero_data;
             }
         }
 
@@ -50,7 +62,7 @@ int bfp_norm_tb(){    // Test BFP normalisation with random stimulus.
         // Compare DUT result to reference, should be equal.
         for(int j=0; j<N; j++){
             for(int k=0; k<N; k++){
-                if((ref_copy[j][k].acc * pow(2,ref_copy.bias)) != (op.data[j][k].acc * pow(2,sum.bias))){
+                if((ref_copy.data[j][k].acc * pow(2,ref_copy.bias)) != (op.data[j][k].acc * pow(2,op.bias))){
 
                     printf("[ERROR] FAILED: Reference does not match DUT.\n");
                     throw 1;
