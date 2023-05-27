@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cmath>
 
+#define ADD_POST_NORM 1
 #define MUL_NORM 1
 
 #include "../BlockMat.hpp"

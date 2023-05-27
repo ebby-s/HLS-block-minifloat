@@ -36,6 +36,8 @@ bfp_add_frmts = ['4,0','4,1','4,2','5,0','5,1','5,2','6,3']
 bfp_add_range = [str(n) for n in range(1,5)]
 bfp_add_ext   = ['15','16','17','32','48']
 
+add_post_norm = True
+
 mul_norm = True   # Generate & test normalisation stage of matrix multipliers.
 
 
@@ -50,6 +52,7 @@ tb_file.write(
 
 ''')
 
+tb_file.write("#define ADD_POST_NORM "+str(int(add_post_norm))+"\n")
 tb_file.write("#define MUL_NORM "+str(int(mul_norm))+"\n")
 
 tb_file.write(
