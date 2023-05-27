@@ -18,6 +18,10 @@
 #define WPRD(E,M) (2*((1<<E)+M))
 #define FPRD(E,M) (2*(M-1))
 
+// Macros for generating pragmas with defined variables.
+#define PRAGMA_SUB(x) _Pragma (#x)
+#define DO_PRAGMA(x) PRAGMA_SUB(x)
+
 
 template <int E, int M> struct MiniFloat;     // MiniFloat.
 template <int W, int F> struct IntAcc;    // Fixed Point Accumulator.
