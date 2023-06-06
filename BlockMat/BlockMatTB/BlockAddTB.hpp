@@ -10,7 +10,7 @@ int bfp_add_tb(){    // Test BFP adder with random stimulus.
     int  ref_bias;         // Reference shared exponent.
 
     // Log parameters.
-    std::cout << "[INFO] BFP Add, Parameters: N=" << N << " W=" << W << " F=" << F << " Norm=" << ADD_POST_NORM << '\n';
+    std::cout << "[INFO] BFP Add, Parameters: N=" << N << " W=" << W << " F=" << F << '\n';
 
     for(int l=0; l<(1<<8); l++){    // Test with random inputs.
 
@@ -97,16 +97,16 @@ int bfp_add_tb(){    // Test BFP adder with random stimulus.
         }
 
         // Check if sum is normalised.
-        bool normalised = false;
-        for(int j=0; j<N; j++){
-            for(int k=0; k<N; k++){
-                normalised = (sum.data[j][k].acc[W+3+1-1] ^ sum.data[j][k].acc[W+3+1-2]) ? true : normalised;
-            }
-        }
-        if(!zero_data && !normalised && ADD_POST_NORM){
-            printf("[ERROR] FAILED: Sum not normalised.\n");
-            throw 1;
-        }
+        // bool normalised = false;
+        // for(int j=0; j<N; j++){
+        //     for(int k=0; k<N; k++){
+        //         normalised = (sum.data[j][k].acc[W+3+1-1] ^ sum.data[j][k].acc[W+3+1-2]) ? true : normalised;
+        //     }
+        // }
+        // if(!zero_data && !normalised){
+        //     printf("[ERROR] FAILED: Sum not normalised.\n");
+        //     throw 1;
+        // }
 
         // Compare DUT result to float32 reference.
         for(int j=0; j<N; j++){

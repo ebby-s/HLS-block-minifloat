@@ -4,12 +4,12 @@
 # Working: E=[2,4], M=16
 # Working: E=2, M=[0,16]
 # Working: E=4, M=[0,16]
-bmf_mul_en    = False
+bmf_mul_en    = True
 bmf_mul_frmts = ['2,0','2,1','2,2','3,0','3,1','3,2','4,3']
 bmf_mul_range = [str(n) for n in range(1,5)]
 bmf_mul_ext   = ['15','16','17','32','48','64','65']
 
-bfp_mul_en    = False
+bfp_mul_en    = True
 bfp_mul_frmts = ['4,0','4,1','4,2','5,0','5,1','5,2','6,3']
 bfp_mul_range = [str(n) for n in range(1,5)]
 bfp_mul_ext   = ['15','16','17','32','48']
@@ -31,7 +31,7 @@ bfp_bfp_frmts_in = ['4,0','6,2','10,4']
 bfp_bfp_range    = [str(n) for n in range(1,5)]
 bfp_bfp_ext      = ['15','16','17','32','48','65']
 
-bfp_add_en    = False
+bfp_add_en    = True
 bfp_add_frmts = ['4,0','4,1','4,2','5,0','5,1','5,2','6,3']
 bfp_add_range = [str(n) for n in range(1,5)]
 bfp_add_ext   = ['15','16','17','32','48']
@@ -40,10 +40,6 @@ bfp_norm_en    = True
 bfp_norm_frmts = ['4,0','4,1','4,2','5,0','5,1','5,2','6,3']
 bfp_norm_range = [str(n) for n in range(1,5)]
 bfp_norm_ext   = ['15','16','17','32','48']
-
-add_post_norm = True
-
-mul_norm = True   # Generate & test normalisation stage of matrix multipliers.
 
 
 # Create TB file and generate tests.
@@ -55,13 +51,6 @@ tb_file.write(
 #include <cstdlib>
 #include <cmath>
 
-''')
-
-tb_file.write("#define ADD_POST_NORM "+str(int(add_post_norm))+"\n")
-tb_file.write("#define MUL_NORM "+str(int(mul_norm))+"\n")
-
-tb_file.write(
-'''
 #include "../BlockMat.hpp"
 
 #include "HelperTB.hpp"
