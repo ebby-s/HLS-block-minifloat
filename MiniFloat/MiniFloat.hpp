@@ -95,9 +95,6 @@ template <int W, int F> struct IntAcc{
     template<int W2>
     inline IntAcc<MAX(W,W2)+1,F> operator +(const IntAcc<W2,F> &op);
 
-    // // Add a pair of fi numbers with equal width.
-    // IntAcc<W+1,F> operator +(const IntAcc<W,F> &op);
-
     //////----Methods for verification, do not synthesize.----//////
     // Convert to cpp float. Assume bias=0.
     operator float() const{

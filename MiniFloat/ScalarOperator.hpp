@@ -73,16 +73,6 @@ inline IntAcc<2*W,2*F> IntAcc<W,F>::operator *(const IntAcc<W,F> &op){
 }
 
 
-
-// // Sum a pair of fixed point numbers of equal width.
-// template <int W, int F>
-// IntAcc<W+1,F> IntAcc<W,F>::operator +(const IntAcc<W,F> &op){
-//     IntAcc<W+1,F> out;
-//     out.acc = acc;
-//     out.acc += op.acc;
-//     return out;
-// }
-
 // Sum a pair of fixed point numbers of arbitrary widths.
 template <int W, int F>
 template <int W2>
