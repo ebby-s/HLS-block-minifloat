@@ -8,7 +8,8 @@ ia_add_en = False   # IntAcc Adder
 mf_dp_en  = False   # MiniFloat dot product circuits
 ia_dp_en  = True   # IntAcc dot product circuits
 
-# Control parameters that are tested here:
+
+# Control which configurations are tested:
 
 # frmts -> Input formats to be tested. 'E,M' for MiniFloat, 'W,F' for IntAcc.
 # rand  -> Postfix indicates random testing, not exhaustive. For large formats.
