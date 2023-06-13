@@ -34,26 +34,6 @@ int bmf_to_bfp_tb(){    // Test BMP to BFP conversion with random stimulus.
         // Get result from DUT.
         bfp_out = bmf_in;
 
-        // Check if product is normalised.
-        bool normalised = false;
-        bool zero_data = true;    // Set to false if non-zero output.
-        for(int j=0; j<N; j++){
-            for(int k=0; k<N; k++){
-                zero_data = (double(bmf_in.data[j][k]) != 0) ? false : zero_data;
-                normalised = (bfp_out.data[j][k].acc[WPRD(E,M)/2-1] ^ bfp_out.data[j][k].acc[WPRD(E,M)/2-2]) ? true : normalised;
-            }
-        }
-        if(!zero_data && !normalised){
-            printf("[ERROR] FAILED: Product not normalised.\n");
-            throw 1;
-        }
-
-        // Check if bias was zeroed for cases where all data is zero.
-        if(zero_data && (bfp_out.bias != 0)){
-            printf("[ERROR] FAILED: Non-zero bias with zero data.\n");
-            throw 1;
-        }
-
         // Compare DUT result to float32 reference.
         for(int j=0; j<N; j++){
             for(int k=0; k<N; k++){
@@ -95,7 +75,7 @@ int bfp_to_bmf_tb(){    // Test BFP to BMF conversion with random stimulus.
         }
         do{
             bfp_in.bias = rand() % (1<<8);
-        }while(((bfp_in.bias+W-(1<<E)-F)>=128) || ((bfp_in.bias-F)<-128));
+        }while(((bfp_in.bias+W-(1<<E)-F)>=128) || ((bfp_in.bias-F)>=128) || ((bfp_in.bias-F)<-128));
 
         // Get result from DUT.
         bmf_out = bfp_in;

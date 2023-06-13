@@ -5,6 +5,7 @@
 #define ADD_UNROLL 1
 #endif
 
+// Add a pair of BFP blocks.
 template<int N, int W, int F>
 BlockFP<N,W+3+1,F+3> BlockFP<N,W,F>::operator +(BlockFP<N,W,F> &op){
 
@@ -12,6 +13,7 @@ BlockFP<N,W+3+1,F+3> BlockFP<N,W,F>::operator +(BlockFP<N,W,F> &op){
 
     BlockFP<N,Weff,F+3> out;
 
+    // Choose partitioning based on value of unroll parameter.
     #if (ADD_UNROLL == 0)
         #pragma HLS ARRAY_PARTITION variable=data     dim=1 complete
         #pragma HLS ARRAY_PARTITION variable=op.data  dim=1 complete
