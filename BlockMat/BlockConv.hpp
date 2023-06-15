@@ -1,78 +1,42 @@
 #ifndef CONV
 #define CONV
 
-
+// Convert BMF to BFP.
 template<int N, int E, int M>
 BlockMF<N,E,M>::operator BlockFP<N,WPRD(E,M)/2,FPRD(E,M)/2>() const{
 
-    // Declare output.
-    BlockFP<N,WPRD(E,M)/2,FPRD(E,M)/2> out;
+    const int Weff = (WPRD(E,M)/2);
 
-    //////----Calculations for bias.----//////
-    // ldz/ldo   -> leading zeroes/ones.
-    // ldd       -> leading digits = max(ldz,ldo).
-    // shift_amt -> initialize to max value.
-    // zero_data -> if true and shift_amt is unchanged, set data to zero.
-    ap_uint<CLOG2(WPRD(E,M)/2+1)> ldz, ldo, ldd, shift_amt = (WPRD(E,M)/2-1);
-    bool zero_data = true;
+    BlockFP<N,Weff,FPRD(E,M)/2> out;
+
+    #pragma HLS ARRAY_PARTITION variable=data     dim=0 complete
+    #pragma HLS ARRAY_PARTITION variable=out.data dim=0 complete
 
     // Convert to BlockFP with no loss in accuracy.
+    bmf_bfp_r_loop:
     for (int i=0; i<N; i++) {
-        #pragma HLS unroll
+        #pragma HLS UNROLL
+        bmf_bfp_c_loop:
         for (int j=0; j<N; j++) {
-            #pragma HLS unroll
+            #pragma HLS UNROLL
 
-            IntAcc<WPRD(E,M)/2,FPRD(E,M)/2> conv_int;
-
-            // Extract sign and exponent.
-            ap_uint<1> sgn = data[i][j].data >> (E+M);
+            // Extract exponent.
             ap_uint<E> exp = (data[i][j].data >> M) & ((1<<E)-1);
             // Calculate mantissa.
             if(M == 0){
-                conv_int.acc = (exp != 0);
+                out.data[i][j].acc = (exp != 0);
             }else{
-                conv_int.acc = (((exp != 0) << M) | (data[i][j].data & ((1<<M)-1)));
+                out.data[i][j].acc = (((exp != 0) << M) | (data[i][j].data & ((1<<M)-1)));
             }
-            if(exp) conv_int.acc <<= exp-1;
-            if(sgn) conv_int.acc *= -1;
-
-            out.data[i][j] = conv_int;
-
-            // Update shift_amt based on leading 0s or 1s.
-            ldz = 0;
-            ldo = 0;
-
-            for(int k=WPRD(E,M)/2-1; ((k>=0) && out.data[i][j].acc[k]); k--)
-                ldo++;
-
-            for(int k=WPRD(E,M)/2-1; ((k>=0) && !out.data[i][j].acc[k]); k--)
-                ldz++;
-
-            ldd = (ldo == 0) ? ldz : ldo;
-
-            if((ldd-1) < shift_amt)
-                shift_amt = (ldd-1);
-
-            if((shift_amt == (WPRD(E,M)/2-1)) && (ldz == 0))
-                zero_data = false;
+            // Apply exponent and sign.
+            if(exp)
+                out.data[i][j].acc <<= exp-1;
+            if(data[i][j].data >> (E+M))
+                out.data[i][j].acc *= -1;
         }
     }
 
-    // Calculate and adjust output bias based on shift_amt.
-    // Check if data is all zero, adjust bias_sum.
-    if(shift_amt == (WPRD(E,M)/2-1) && zero_data){
-        shift_amt = WPRD(E,M)/2;
-        out.bias = 0;
-    }else{
-        out.bias = bias - shift_amt;
-    }
-
-    // Apply shift to data.
-    for(int i=0; i<N; i++){
-        for(int j=0; j<N; j++){
-            out.data[i][j].acc = out.data[i][j].acc << shift_amt;
-        }
-    }
+    out.bias = bias;
 
     return out;
 }
@@ -80,8 +44,8 @@ BlockMF<N,E,M>::operator BlockFP<N,WPRD(E,M)/2,FPRD(E,M)/2>() const{
 
 // Convert BFP to BMF.
 template <int N, int W, int F>
-template <int E, int M>
-BlockFP<N,W,F>::operator BlockMF<N,E,M>() const{
+template <int E, int M, rnd_mode_t RMF>
+BlockMF<N,E,M> BlockFP<N,W,F>::toBMF(){
 
     BlockMF<N,E,M> out;
     // Convert integers to MiniFloats.
@@ -128,9 +92,21 @@ BlockFP<N,W,F>::operator BlockMF<N,E,M>() const{
 
             // Round integer to fit in mantissa.
             if(W < (M+1)){
-                out_mf.data |= (ap_uint<M>(man_ext) << (M+1-W)) & ((1<<M)-1);
+                out_mf.data |= (ap_uint<M+1>(man_ext) << (M+1-W)) & ((1<<M)-1);
             }else{
-                out_mf.data |= (rnd_method->rnd_bmf(man_ext, M+1)) & ((1<<M)-1);
+                if(RFP == RTZ){
+                    out_mf.data |= (rnd_RTZ<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
+                }else if(RFP == RAZ){
+                    out_mf.data |= (rnd_RAZ<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
+                }else if(RFP == RNI){
+                    out_mf.data |= (rnd_RNI<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
+                }else if(RFP == RPI){
+                    out_mf.data |= (rnd_RPI<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
+                }else if(RFP == RNE){
+                    out_mf.data |= (rnd_RNE<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
+                }else if(RFP == STOCHASTIC){
+                    out_mf.data |= (rnd_STOCHASTIC<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
+                }
             }
 
             out.data[i][j] = out_mf;
@@ -147,46 +123,72 @@ BlockFP<N,W,F>::operator BlockMF<N,E,M>() const{
 }
 
 
-// Round down BFP.
+// Convert BFP to BFP.
 template <int N, int W, int F>
-template <int Wo, int Fo>
-BlockFP<N,W,F>::operator BlockFP<N,Wo,Fo>() const{
+template <int Wo, int Fo, rnd_mode_t RFP>
+BlockFP<N,Wo,Fo> BlockFP<N,W,F>::toBFP(){
 
+    BlockFP<N,Wo,Fo> out;
+
+    #pragma HLS ARRAY_PARTITION variable=data     dim=0 complete
+    #pragma HLS ARRAY_PARTITION variable=out.data dim=0 complete
+
+    // Rounding signals. Only used if W > Wo.
     BlockFP<N,Wo+1,Fo> rnd;
-    BlockFP<N,Wo  ,Fo> out;
-    // Records if any rounding operations overflowed.
     bool rnd_ofl = false;
 
-    // Convert integers to MiniFloats.
+    // Round or shift data to new width.
+    bfp_bfp_r_loop:
     for (int i=0; i<N; i++) {
-        #pragma HLS unroll
+        #pragma HLS UNROLL
+        bfp_bfp_c_loop:
         for (int j=0; j<N; j++) {
-            #pragma HLS unroll
+            #pragma HLS UNROLL
+            #pragma HLS INLINE
 
-            IntAcc<Wo+1,Fo> rnd_fp;
             if(W > Wo){
-                rnd_fp.acc = rnd_method->rnd_bfp(data[i][j].acc, Wo);
+                IntAcc<Wo+1,Fo> rnd_fp;
+                if(RFP == RTZ){
+                    rnd_fp.acc = rnd_RTZ<N,W,F>(data[i][j].acc, Wo);
+                }else if(RFP == RAZ){
+                    rnd_fp.acc = rnd_RAZ<N,W,F>(data[i][j].acc, Wo);
+                }else if(RFP == RNI){
+                    rnd_fp.acc = rnd_RNI<N,W,F>(data[i][j].acc, Wo);
+                }else if(RFP == RPI){
+                    rnd_fp.acc = rnd_RPI<N,W,F>(data[i][j].acc, Wo);
+                }else if(RFP == RNE){
+                    rnd_fp.acc = rnd_RNE<N,W,F>(data[i][j].acc, Wo);
+                }else if(RFP == STOCHASTIC){
+                    rnd_fp.acc = rnd_STOCHASTIC<N,W,F>(data[i][j].acc, Wo);
+                }
+                rnd_ofl |= (rnd_fp.acc[Wo] ^ rnd_fp.acc[Wo-1]);
+                rnd.data[i][j] = rnd_fp;
             }else{
-                rnd_fp.acc = ap_int<Wo+1>(data[i][j].acc) << (Wo - W);
+                out.data[i][j].acc = ap_int<Wo>(data[i][j].acc) << (Wo - W);
             }
-            rnd_ofl |= (rnd_fp.acc[Wo] ^ rnd_fp.acc[Wo-1]);
-            rnd.data[i][j] = rnd_fp;
         }
     }
 
     // Assign output, shift if rounding caused overflow.
-    for (int i=0; i<N; i++) {
-        #pragma HLS unroll
-        for (int j=0; j<N; j++) {
-            #pragma HLS unroll
+    if(W > Wo){
+        for (int i=0; i<N; i++) {
+            #pragma HLS UNROLL
+            for (int j=0; j<N; j++) {
+                #pragma HLS UNROLL
 
-            IntAcc<Wo,Fo> out_fp;
-            out_fp.acc = rnd.data[i][j].acc >> rnd_ofl;
-            out.data[i][j] = out_fp;
+                IntAcc<Wo,Fo> out_fp;
+                out_fp.acc = rnd.data[i][j].acc >> rnd_ofl;
+                out.data[i][j] = out_fp;
+            }
         }
     }
+
     // Adjust bias if rounding caused overflow.
-    out.bias = bias + ((W-F)-(Wo-Fo)) + rnd_ofl;
+    if(W > Wo){
+        out.bias = bias + ((W-F)-(Wo-Fo)) + rnd_ofl;
+    }else{
+        out.bias = bias + ((W-F)-(Wo-Fo));
+    }
 
     return out;
 }

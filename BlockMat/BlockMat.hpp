@@ -70,11 +70,13 @@ template<int N, int W, int F> struct BlockFP{
 
     void normalise();  // Normalise block.
 
-    template<int E, int M>
-    operator BlockMF<N,E,M>() const;        // Normalize a block of accumulators and convert to BMF.
+    template<int E, int M, rnd_mode_t RMF>
+    // operator BlockMF<N,E,M>() const;        // Convert BFP to BMF.
+    BlockMF<N,E,M> toBMF();
 
-    template<int Wo, int Fo>
-    operator BlockFP<N,Wo,Fo>() const;      // Round down a BFP block and change frac bits.
+    template<int Wo, int Fo, rnd_mode_t RFP>
+    // operator BlockFP<N,Wo,Fo>() const;      // Convert BFP to a different BFP format.
+    BlockFP<N,Wo,Fo> toBFP();
 
     BlockFP<N,W,F>(){}
 

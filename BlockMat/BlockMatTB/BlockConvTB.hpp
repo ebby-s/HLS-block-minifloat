@@ -78,7 +78,7 @@ int bfp_to_bmf_tb(){    // Test BFP to BMF conversion with random stimulus.
         }while(((bfp_in.bias+W-(1<<E)-F)>=128) || ((bfp_in.bias-F)>=128) || ((bfp_in.bias-F)<-128));
 
         // Get result from DUT.
-        bmf_out = bfp_in;
+        bmf_out = bfp_in.template toBMF<E,M,RNI>();
 
         // Compare DUT result to float32 reference.
         for(int j=0; j<N; j++){
@@ -126,7 +126,7 @@ int bfp_to_bfp_tb(){    // Test BFP to BFP conversion with random stimulus.
         }while(((bfp_in.bias+((W-F)-(Wo-Fo))+1)>=128) || ((bfp_in.bias+((W-F)-(Wo-Fo)))<-128));
 
         // Get result from DUT.
-        bfp_out = bfp_in;
+        bfp_out = bfp_in.template toBFP<Wo,Fo,RNI>();
 
         // Compare DUT result to float32 reference.
         for(int j=0; j<N; j++){

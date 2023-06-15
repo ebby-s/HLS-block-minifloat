@@ -42,10 +42,12 @@ BlockFP<N,W+3+1,F+3> BlockFP<N,W,F>::operator +(BlockFP<N,W,F> &op){
 
         #if (ADD_UNROLL == 0)
             #pragma HLS UNROLL
-        #elif (ADD_UNROLL == 1)
-            #pragma HLS PIPELINE II=1
-        #else
+        #elif (ADD_UNROLL > 1)
             DO_PRAGMA(HLS UNROLL factor=ADD_UNROLL)
+        #endif
+
+        #if (ADD_UNROLL != 0)
+            #pragma HLS PIPELINE II=1
         #endif
 
         add_c_loop:
