@@ -27,7 +27,7 @@ int clog2lu(long n){
     }
 }
 
-// Helper function to round unsigned.
+// Helper function to round BFP to BMF conversions.
 long rnd_bmf_ninf_u(long prd, int M, int E, int W){
 
     int sgn = (prd < 0) ? -1 : 1;
@@ -46,8 +46,50 @@ long rnd_bmf_ninf_u(long prd, int M, int E, int W){
     return sgn*prd;
 }
 
-// Helper function to round signed.
-long rnd_bfp_ninf(long prd, int W, int Wo){
+// Helper functions to round BFP to BFP Conversions.
+long rnd_bfp_RTZ(long prd, int W, int Wo){
+
+    int rnd_bits = W - Wo;
+    bool rnd_up;
+
+    if(rnd_bits > 0){
+
+        rnd_up = ((prd & ((1<<rnd_bits)-1)) != 0);
+
+        prd &= ~((1<<rnd_bits)-1);
+
+        if(prd < 0)
+            prd += long(rnd_up) << rnd_bits;
+
+        if(prd == (1<<(W-1))){
+            prd -= 1 << rnd_bits;
+        }
+    }
+
+    return prd;
+}
+long rnd_bfp_RAZ(long prd, int W, int Wo){
+
+    int rnd_bits = W - Wo;
+    bool rnd_up;
+
+    if(rnd_bits > 0){
+
+        rnd_up = ((prd & ((1<<rnd_bits)-1)) != 0);
+
+        prd &= ~((1<<rnd_bits)-1);
+
+        if(prd > 0)
+            prd += long(rnd_up) << rnd_bits;
+
+        if(prd == (1<<(W-1))){
+            prd -= 1 << rnd_bits;
+        }
+    }
+
+    return prd;
+}
+long rnd_bfp_RNI(long prd, int W, int Wo){
 
     int rnd_bits = W - Wo;
 
@@ -56,8 +98,28 @@ long rnd_bfp_ninf(long prd, int W, int Wo){
 
     return prd;
 }
+long rnd_bfp_RPI(long prd, int W, int Wo){
 
+    int rnd_bits = W - Wo;
+    bool rnd_up;
 
+    if(rnd_bits > 0){
+
+        rnd_up = ((prd & ((1<<rnd_bits)-1)) != 0);
+
+        prd &= ~((1<<rnd_bits)-1);
+
+        prd += long(rnd_up) << rnd_bits;
+
+        if(prd == (1<<(W-1))){
+            prd -= 1 << rnd_bits;
+        }
+    }
+
+    return prd;
+}
+
+// Helper functions to round Additions.
 long rnd_add_ninf(long op0, long op1, int bias0, int bias1, int W){
 
     long op_a, op_b;

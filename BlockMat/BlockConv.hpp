@@ -1,6 +1,10 @@
 #ifndef CONV
 #define CONV
 
+#ifndef BFP_OFL_MODE
+#define BFP_OFL_MODE 0
+#endif
+
 // Convert BMF to BFP.
 template<int N, int E, int M>
 BlockMF<N,E,M>::operator BlockFP<N,WPRD(E,M)/2,FPRD(E,M)/2>() const{
@@ -48,15 +52,19 @@ template <int E, int M, rnd_mode_t RMF>
 BlockMF<N,E,M> BlockFP<N,W,F>::toBMF(){
 
     BlockMF<N,E,M> out;
+
+    #pragma HLS ARRAY_PARTITION variable=data     dim=0 complete
+    #pragma HLS ARRAY_PARTITION variable=out.data dim=0 complete
+
     // Convert integers to MiniFloats.
     for (int i=0; i<N; i++) {
-        #pragma HLS unroll
+        #pragma HLS UNROLL
         for (int j=0; j<N; j++) {
-            #pragma HLS unroll
+            #pragma HLS UNROLL
 
             MiniFloat<E,M> out_mf;
             ap_uint<W> man_ext;
-            ap_uint<CLOG2(W+1)> ldz = 0;
+            ap_uint<CLOG2(W+1)> ldz;
 
             // Extract sign, take abs value of data.
             out_mf.data = (data[i][j].acc < 0) << (E+M);
@@ -66,9 +74,8 @@ BlockMF<N,E,M> BlockFP<N,W,F>::toBMF(){
                 man_ext = data[i][j].acc;
             }
 
-            // Count leading zeros, extract exponent.
-            for(int k=W-1; ((k>=0) && (!man_ext[k])); k--)
-                ldz++;
+            // Count leading zeros, extract exponent.            
+            ldz = CtLZ<W>(man_ext);
 
             if((W-1) >= (1<<E)){
                 if(ldz < ((1<<E)-1)){
@@ -94,17 +101,17 @@ BlockMF<N,E,M> BlockFP<N,W,F>::toBMF(){
             if(W < (M+1)){
                 out_mf.data |= (ap_uint<M+1>(man_ext) << (M+1-W)) & ((1<<M)-1);
             }else{
-                if(RFP == RTZ){
+                if(RMF == RTZ){
                     out_mf.data |= (rnd_RTZ<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
-                }else if(RFP == RAZ){
+                }else if(RMF == RAZ){
                     out_mf.data |= (rnd_RAZ<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
-                }else if(RFP == RNI){
+                }else if(RMF == RNI){
                     out_mf.data |= (rnd_RNI<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
-                }else if(RFP == RPI){
+                }else if(RMF == RPI){
                     out_mf.data |= (rnd_RPI<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
-                }else if(RFP == RNE){
+                }else if(RMF == RNE){
                     out_mf.data |= (rnd_RNE<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
-                }else if(RFP == STOCHASTIC){
+                }else if(RMF == STOCHASTIC){
                     out_mf.data |= (rnd_STOCHASTIC<N,W,F>(man_ext, M+1)) & ((1<<M)-1);
                 }
             }
@@ -133,9 +140,11 @@ BlockFP<N,Wo,Fo> BlockFP<N,W,F>::toBFP(){
     #pragma HLS ARRAY_PARTITION variable=data     dim=0 complete
     #pragma HLS ARRAY_PARTITION variable=out.data dim=0 complete
 
+    #if (BFP_OFL_MODE == 1)
     // Rounding signals. Only used if W > Wo.
     BlockFP<N,Wo+1,Fo> rnd;
     bool rnd_ofl = false;
+    #endif
 
     // Round or shift data to new width.
     bfp_bfp_r_loop:
@@ -161,14 +170,25 @@ BlockFP<N,Wo,Fo> BlockFP<N,W,F>::toBFP(){
                 }else if(RFP == STOCHASTIC){
                     rnd_fp.acc = rnd_STOCHASTIC<N,W,F>(data[i][j].acc, Wo);
                 }
-                rnd_ofl |= (rnd_fp.acc[Wo] ^ rnd_fp.acc[Wo-1]);
+
+                #if BFP_OFL_MODE == 0
+                if((!rnd_fp.acc[Wo]) && rnd_fp.acc[Wo-1]){
+                    out.data[i][j].acc = (1<<(Wo-1))-1;
+                }else{
+                    out.data[i][j] = rnd_fp;
+                }
+                #elif BFP_OFL_MODE == 1
+                rnd_ofl |= ((!rnd_fp.acc[Wo]) && rnd_fp.acc[Wo-1]);
                 rnd.data[i][j] = rnd_fp;
+                #endif
+
             }else{
                 out.data[i][j].acc = ap_int<Wo>(data[i][j].acc) << (Wo - W);
             }
         }
     }
 
+    #if BFP_OFL_MODE == 1
     // Assign output, shift if rounding caused overflow.
     if(W > Wo){
         for (int i=0; i<N; i++) {
@@ -182,13 +202,19 @@ BlockFP<N,Wo,Fo> BlockFP<N,W,F>::toBFP(){
             }
         }
     }
+    #endif
 
+    #if BFP_OFL_MODE == 0
+    // Adjust bias.
+    out.bias = bias + ((W-F)-(Wo-Fo));
+    #elif BFP_OFL_MODE == 1
     // Adjust bias if rounding caused overflow.
     if(W > Wo){
         out.bias = bias + ((W-F)-(Wo-Fo)) + rnd_ofl;
     }else{
         out.bias = bias + ((W-F)-(Wo-Fo));
     }
+    #endif
 
     return out;
 }

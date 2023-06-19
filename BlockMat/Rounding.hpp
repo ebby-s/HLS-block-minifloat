@@ -6,14 +6,14 @@
 //     ap_uint<32> lfsr;
 
 //     ap_uint<32> rand(){
-//         bool b_32 = lfsr.get_bit(32-32);
-//         bool b_22 = lfsr.get_bit(32-22);
-//         bool b_2 = lfsr.get_bit(32-2);
-//         bool b_1 = lfsr.get_bit(32-1);
+//         bool b_32 = lfsr(31,31);
+//         bool b_22 = lfsr(31,21);
+//         bool b_2 = lfsr(31,1);
+//         bool b_1 = lfsr(31,0);
 //         bool new_bit = b_32 ^ b_22 ^ b_2 ^ b_1;
 
 //         lfsr >>= 1;
-//         lfsr.set_bit(31, new_bit);
+//         lfsr[31] = new_bit;
 
 //         return lfsr;
 //     }
