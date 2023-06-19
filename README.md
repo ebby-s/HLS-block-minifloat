@@ -2,19 +2,18 @@
 
 1. [Overview](#overview)
 2. [Usage](#usage)
-    *  [Primitives](#overview)
-        *  [MiniFloat](#overview)
-        *  [IntAcc](#overview)
-    *  [Blocks](#overview)
-        *  [BlockMF](#overview)
-        *  [BlockFP](#overview)
-    *  [Rounding Methods](#overview)
-    *  [Helper Functions/Macros](#overview)
-    *  [Testbenches](#overview)
+    *  [Custom Primitive Types](#usage)
+        *  [MiniFloat](#usage)
+        *  [IntAcc](#usage)
+    *  [Blocks](#blocks)
+        *  [BlockMF](#blocks)
+        *  [BlockFP](#blocks)
+    *  [Rounding Methods](#rounding)
+    *  [Helper Functions/Macros](#rounding)
+    *  [Testbenches](#rounding)
 3. [Examples](#examples)
-    *  [MiniFloat 2x1 Dot Product](#overview)
-    *  [BMF Matrix Multiplier](#overview)
-    *  [BFP Matrix Multiplier](#overview)
+    *  [2x1 Dot Product](#examples)
+    *  [Block Matrix Multiplier](#examples)
 4. [Contributors](#contributors)
 5. [License](#license)
 
@@ -109,7 +108,7 @@ The width of the representation can be changed. If the new width is smaller, hig
 
 Any `IntAcc` variable can be converted to a built-in `float`, `double` or `long double` in C++. If rounding is performed, lower bits are truncated.
 
-
+<a name="blocks"></a>
 ## 2.2 Blocks
 
 These types represent BMF and BFP formats, which contain data in a primitive format along with an 8-bit shared exponent.
@@ -188,7 +187,7 @@ Adds BMF blocks together, uses the rounding method associated with this object. 
 
 A BFP block can be converted to any valid BMF format with parameters `E` and `M`, or another BFP format with parameters `Wo` and `Fo`. The block size `N` stays the same in both cases. These operations could require rounding, in which case the rounding mode parameter specified the rounding mode used.
 
-
+<a name="rounding"></a>
 ## 2.3 Rounding Methods
 
 The conversions in the `BlockFP` class require rounding because of the loss of precision. The rounding mode is specified as a parameter value to the conversion function. Some rounding modes are provided in the `BlockMat/Rounding.hpp` header file. The parameter specifies a value of type `rnd_mode_t`, the definition of this user-defined type is shown below (from `BlockMat/Rounding.hpp`).
